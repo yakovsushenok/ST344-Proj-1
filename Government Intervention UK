@@ -1,0 +1,100 @@
+---
+date: "12/11/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+I will be using the government response tracker by the University of Oxford.
+```{r include=FALSE}
+library(readxl)
+CovidData <- read.csv("tidycovid19.csv")
+
+OxGovResponse <- read.csv(url(
+  "https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv"))
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# I will need to classify the countries into regions in the Oxford Gov response data, I will classify them the same way as the tidycovid19 dataset.
+library(dplyr)
+library(lubridate)
+
+regionclassifier <- {CovidData %>% subset(select = c(country, region)) %>% distinct(country, .keep_all =  TRUE)}
+
+OxGovResponse <- {OxGovResponse %>% mutate(Region = CountryName) }
+
+
+#Changing the values of the Region based on the grouping from tidycovid19 dataset
+for(i in 1:length(OxGovResponse$CountryName) ){
+  if(OxGovResponse$CountryName[i] %in% regionclassifier$country == TRUE){
+    indexval <- which(grepl(OxGovResponse$CountryName[i], regionclassifier$country))
+    OxGovResponse$Region[i] <- regionclassifier$region[indexval]
+  }
+}
+
+
+```
+
+
+I will be looking into a few variables which will give us a better idea of the initiatives that governments have put in place. I will add a link to the code book which contains all the details of the variables: https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
+
+Some of the government interventions that I will have a look at are restrictions on gatherings, restrictions on public transport, stay at home requirements and the mandatory use of facial coverings.
+
+```{r include=FALSE}
+library(dplyr)
+library(lubridate)
+subsetofOxGov <- {OxGovResponse %>% subset(select = c(CountryName, RegionName,Date,C4_Restrictions.on.gatherings, C5_Close.public.transport, C6_Stay.at.home.requirements, E1_Income.support, H3_Contact.tracing, H6_Facial.Coverings))}
+
+#Let us fix the Date column so R can understand it
+
+subsetofOxGov <- subsetofOxGov %>% mutate(Date = as.Date(as.character(subsetofOxGov$Date), format = "%Y%m%d"))
+```
+
+I will provide a plot of the level of restrictions on private gatherings against the date that the measure was implemented.
+```{r echo=FALSE, fig.align="center", message=FALSE, warning=FALSE, out.width="50%"}
+library(ggplot2)
+UKData <- {subsetofOxGov %>% filter(CountryName == "United Kingdom") %>% select(RegionName,Date,C4_Restrictions.on.gatherings, C5_Close.public.transport, C6_Stay.at.home.requirements, E1_Income.support, H3_Contact.tracing, H6_Facial.Coverings)}
+
+#Note, you will need to filter the data by region as well.
+UKGovDataC4 <- {UKData %>% filter(RegionName == "England") %>% select(Date,C4_Restrictions.on.gatherings)}
+plot_UKC4 <- {UKGovDataC4 %>% ggplot(aes(x = Date, y = C4_Restrictions.on.gatherings)) + geom_point() +
+    ggtitle("UK Restrictions on gatherings against the\ndate that it was implemented")}
+print(plot_UKC4)
+```
+As we can see around late March, the value 4 indicates that there was restrictions on gatherings of 10 people or less. This restriction would have a great impact on large social events, causing these to be canceled. This will mean the hospitality industry will suffer as event goers are no longer present. Also, the restriction on gatherings will mean that most physical shops will have a reduced number of customers at one time which will affect the sales.
+```{r echo=FALSE, fig.align="center", message=FALSE, warning=FALSE, out.width="50%"}
+variabletoinvestigate = "C6_Stay.at.home.requirements"
+UKGovDataC6 <- {UKData %>% filter(RegionName == "England") %>% select(Date,variabletoinvestigate)}
+plot_UKC6 <- {UKGovDataC6 %>% ggplot(aes(x = Date, y = C6_Stay.at.home.requirements)) + geom_point() +
+    ggtitle("UK Stay at home requirements against the\ndate that it was implemented") + ylim(0, 3)}
+print(plot_UKC6)
+```
+
+This plot displays the Stay at home requirements as instructed by the UK Government against the date that it was implemented. The value 0 means there were no measures in place. 1 indicates a recommendation to not leave the house. 2 indicates not leaving the house with exceptions for daily exercise, grocery shopping, and "essential" trips. The value 3 means that you are not allowed to leave the house, but only with minimal exceptions. During late March to late April there was a strict requirement on leaving your home as it was the early stages of the COVID-19 in the UK. However, this requirement relaxed later on with no requirements between late July to early October.
+
+
+
+```{r echo=FALSE, fig.align="center", message=FALSE, warning=FALSE, out.width="50%"}
+variabletoinvestigate = "C5_Close.public.transport"
+UKGovDataC5 <- {UKData %>% filter(RegionName == "England") %>% select(Date,variabletoinvestigate)}
+plot_UKC5 <- {UKGovDataC5 %>% ggplot(aes(x = Date, y = C5_Close.public.transport)) + geom_point() +
+    ggtitle("UK Reduced public transport services against the\ndate that it was implemented") + ylim(0,2)}
+print(plot_UKC5)
+```
+This plot shows when the UK implemented a reduction in their public transport services. They have had a partial reduction and not a full closure from late March to late October. This reduction in transport services will restrict people from traveling to destinations. This will greatly impact the number of people in retail stores.
+
+```{r echo=FALSE, fig.align="center", message=FALSE, warning=FALSE, out.width="50%"}
+variabletoinvestigate = "H6_Facial.Coverings"
+UKGovDataH6 <- {UKData %>% filter(RegionName == "England") %>% select(Date,variabletoinvestigate)}
+plot_UKH6 <- {UKGovDataH6 %>% ggplot(aes(x = Date, y = H6_Facial.Coverings)) + geom_point() +
+    ggtitle("UK Face covering requirements against the\ndate that it was implemented") + ylim(0, 4)}
+print(plot_UKH6)
+```
+There were NA values for the face coverings data for the UK. I suspect that they may have not been recorded.
+
+
+Some ideas: We could possibly have a look at the top 3 or 4 countries for each region and see how their governments dealt with the pandemic. There are a few more variables but I'm not too sure if they are worth considering. A general case where we look at regions would be very difficult to do and I'm not sure if we can get many useful information out of it.
+Note: I have tried grouping these as regions but I couldn't get much out of the data. So, I have looked into the UK specifically to get some ideas flowing for the Tuesday group meeting.

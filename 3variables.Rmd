@@ -1,0 +1,93 @@
+---
+title: "Untitled"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE,warning = FALSE)
+```
+
+```{r}
+library(readxl)
+CovidData <- read.csv('tidycovid19.csv')
+library(lubridate)
+CovidData$date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd")))
+```  
+
+```{r}
+library(rio)
+Countries <- import("Countries.xlsx", setclass = "tibble")
+newdata <- merge(x=CovidData,y=Countries,all.x = TRUE)
+```
+
+```{r}
+library(dplyr)
+Task1Data <- {newdata %>% 
+    filter(continent=='Europe'|continent=='North America'|continent=='South America') %>%
+    select(country,date, confirmed, gcmr_retail_recreation,   gcmr_grocery_pharmacy, continent) }
+```
+
+```{r}
+firstdiff <- function(x) {
+  shifted <- c(0,x[1:(length(x)-1)])
+  result = x-shifted
+  which_negative = which(result<0)
+  result[which_negative] = NA
+  return(result)
+}
+Task1Data <- Task1Data %>% mutate(daily_confirmed = firstdiff(confirmed))
+```
+
+```{r}
+mean_ <- function(...) mean(..., na.rm=T)
+max_ <- function(...) max(..., na.rm=T)
+Task2Data = {Task1Data %>% group_by(continent) %>% summarise(date=date,confirmed = confirmed,gcmr_retail_recreation = gcmr_retail_recreation, gcmr_grocery_pharmacy = gcmr_grocery_pharmacy,continent=continent)}
+```
+
+```{r  fig.height=5,fig.width=9}
+library(ggplot2)
+retaildate<-{Task2Data %>% ggplot(aes(x=date,y=gcmr_retail_recreation,color=continent))}+geom_point(aes(fill=continent),stat = 'identity')+xlab('Date')+ylab('Activity in retail and recreation (% change from baseline)')
+retaildate
+```
+A sharp decline must correspond to strict government restrictions
+
+The speed of recovery seems similar (same gradient)
+```{r  fig.height=5,fig.width=9}
+library(ggplot2)
+grophadate<-{Task2Data %>% ggplot(aes(x=date,y=gcmr_grocery_pharmacy,color=continent))}+geom_point(aes(fill=continent),stat = 'identity')+xlab('Date')+ylab('Activity in Grocery and Phamacy (% change from baseline)')
+grophadate
+```
+general decrease was not as much as decrease in activity in retail_recreation, come back rapidly even increase positively.
+
+
+```{r}
+library(rio)
+library(dplyr)
+intuserdata<-import('internet_users.xlsx',setclass='tibble')
+```
+```{r}
+library(tidyr)
+Tidy_Data <- pivot_longer(intuserdata, !country, names_to= 'year', values_to = 'percentage')
+tidydata<-filter(Tidy_Data,year %in% c(1980:2018))
+```
+```{r}
+newuserdata <- merge(x=tidydata,y=Countries,all.x = TRUE)
+newuserdata<- filter(newuserdata,continent=='Europe'|continent=='North America'|continent=='South America')
+```
+```{r fig.height=5,fig.width=9}
+mean_ <- function(...) mean(..., na.rm=T)
+averageline<-{newuserdata %>% group_by(continent)%>% summarise(mean_percentage=mean_(percentage),year=year)}
+
+```
+```{r fig.height=5,fig.width=9}
+library(ggplot2)
+intuserplot<-ggplot(newuserdata,aes(x=year,y=percentage,group=continent,color=continent,shape=continent))+geom_point()+labs(x='Year',y='percentage of internet user') 
+
+print(intuserplot)
+```
+
+same pattern:  Europe is most common of internet user. followed by north america(a wider range).South America has relatively concentrated distribution of internet user.
+
+Want to show change of activity in retail and grocery v.s percentage of internet users (must be more ecommerce implies less risky to be confirmed)
+How to link with activity in retail and grocery? because the time line is different.
+

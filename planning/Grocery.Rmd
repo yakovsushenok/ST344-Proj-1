@@ -1,0 +1,146 @@
+---
+title: "ST344-Project"
+author: 'Group 7'
+output:
+  pdf_document:
+  html_document: default
+bookdown::html_document2: default
+html_document:
+  df_print: paged
+bibliography: bibliography.bib
+link-citations: yes
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+In this report, we are going to be analyzing the average percentage change in the frequency of people's visits to grocery stores and pharmacies, relative to a baseline period Jan3- Feb 6, 2020. The reasons we think this variable can play a role in OmniCorp's further decision-making is because in-person grocery and pharamcy shopping is to some extent a habit related to the overall habit trends of shopping, whether for groceries, or products of OmniCorp. 
+
+# The data
+
+The data we are going to be using contains information about a number of variables relating to the epidemic, from which we are going to be analyzing only four variables. For further details on this data see @link1.
+
+We are now going to read in the dataset:
+```{r include=FALSE}
+library(readxl)
+CovidData <- read.csv("tidycovid19.csv")
+```
+
+# Preparing the data for further analysis
+
+To use the variable ```date```, which corresponds to the calendar date, we need R to interpret the ```date``` variable correctly, so we use the following command:
+
+```{r include=FALSE}
+library(lubridate)
+CovidData$date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd")))
+```
+
+
+  1. ```confirmed```, which is confirmed Covid-19 cases as reported by JHU CSSE (accumulated),
+  2. ```date```, which is the calendar date,
+  3.```gcmr_grocery_pharmacy```, which is average percentage change in the frequency of people's visits to grocery stores and pharmacies, relative to a baseline period Jan3- Feb 6, 2020.
+.
+  
+```{r include=FALSE}
+library(dplyr)
+confirmedData <- {CovidData %>% 
+    select(date, confirmed, gcmr_grocery_pharmacy) }
+```
+
+Since ```confirmed``` gives cumulative cases, and we want cases per day, we use the following code to transform the variable:
+
+
+```{r include=FALSE}
+firstdiff <- function(x) {
+  shifted <- c(0,x[1:(length(x)-1)])
+  result = x-shifted
+  which_negative = which(result<0)
+  result[which_negative] = NA
+  return(result)
+}
+
+confirmedData <- confirmedData %>%
+  mutate(daily_confirmed = firstdiff(confirmed))
+```
+
+
+
+```{r include=FALSE}
+library(stringr)
+EuropeAmericaDataPostFeb6 <- {CovidData %>% 
+    filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) & (date > as.Date("2020-02-06")) )}
+```
+
+Now we're going to extract the required summaries:
+
+```{r include=FALSE}
+groceryData = {EuropeAmericaDataPostFeb6 %>% 
+    group_by(country) %>% 
+    summarise(
+              total_confirmed = max(confirmed),
+              mean_gcmr_grocery_pharmacy = mean(gcmr_grocery_pharmacy),
+              pop_largest_city = mean(pop_largest_city ))}
+```
+
+
+
+
+As you can see, we have a lot of missing values, which doesn't quite look right. With the following code, we will fix this:
+
+```{r include=FALSE}
+mean_ <- function(...) mean(..., na.rm=T)
+max_ <- function(...) max(..., na.rm=T)
+groceryData = {EuropeAmericaDataPostFeb6 %>% 
+    group_by(country) %>% 
+    summarise(
+              total_confirmed = max_(confirmed),
+              mean_gcmr_grocery_pharmacy = mean_(gcmr_grocery_pharmacy),
+              pop_largest_city = mean(pop_largest_city ))}
+```
+We now plot ```gcmr_grocery_pharmacy``` against date:
+
+```{r echo=TRUE}
+library(ggplot2)
+EuropeAmericaDataPostFeb6_copy=EuropeAmericaDataPostFeb6
+plot1 <- {EuropeAmericaDataPostFeb6_copy %>% ggplot(aes(x=date,     
+                                            y=gcmr_grocery_pharmacy,color=region))} +
+    geom_point(alpha=0.1,size=0.5)+geom_smooth()+scale_colour_discrete(labels = c('Europe', 'South America',"North America"))+xlab("Date")+ylab("Visits to grocery and pharmacies")
+print(plot1)
+```
+
+We see that the general trend is decrease in visits to groceries and pharamacies. We would advise omnicorp to reconsider its business model in south america, because judging by how much the pandemic has affected the habits of these people (or overall ability), we suspect that this decrease may not recover as we see in other continents such as Europe adn North America.
+
+Let's explore those 
+
+
+```{r echo=TRUE}
+library(ggplot2)
+plot1 <- {groceryData %>% ggplot(aes(x = mean_gcmr_grocery_pharmacy,
+                                            y=total_confirmed))} +
+    geom_point()+ylim(0,2000000)
+print(plot1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,185 @@
+---
+title: "Team coursework EDA"
+author: "Becky Waller"
+urlcolor: blue
+output: pdf_document
+---
+
+```{r setup, include=FALSE, fig.width=5, fig.height=3}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Since the large impacts of the pandemic on OmniCorp, particularly in the retail and hospitality sectors, we are interested in the effects of lockdown and other government interventions and how/why these might be different in different countries.
+
+In the following, we will use the [dataset](https://moodle.warwick.ac.uk/mod/resource/view.php?id=1023429) "tidycovid19.csv", downloaded from the tidycovid19 R package on 24th September 2020. Descriptions of the different variables found in the data relating to the current epidemic and further details of the package can be found at this [website](https://joachim-gassen.github.io/tidycovid19/) (Gassen 2020).
+
+We will also use the [government response data](https://www.bsg.ox.ac.uk/research/research-projects/coronavirus-government-response-tracker#data) (Oxford, 2020) collected by a group at Oxford. Further details of how to interpret the indicators can be found at this [website](https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md)
+
+```{r read, message=FALSE, echo=FALSE, warning=FALSE}
+library(dplyr)
+library(readxl)
+CovidData <- read.csv("tidycovid19.csv")
+
+library(lubridate)
+CovidData <- CovidData %>%
+  mutate(date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd"))))
+```
+
+We look at how the frequency of people visiting workplaces has changed during the pandemic for countries in Europe and America. In particular we study the `gcmr_worplaces` variable from a community mobility report (Google, 2020). The variable is expressed as a percentage*100 change relative to the baseline period Jan 3 - Feb 6, 2020.
+
+```{r data, message=FALSE, echo=FALSE, warning=FALSE}
+UKCaseData <- {CovidData %>% 
+    filter(country == "United Kingdom") %>%
+    select(date, gcmr_workplaces) }
+
+```
+
+We look at how the frequency of visits to workplaces has changed for UK.
+
+```{r plot1, message=FALSE, echo=FALSE, warning=FALSE}
+library(ggplot2)
+work_date <- {UKCaseData %>% ggplot(aes(x = date,
+                                                y = gcmr_workplaces))} +
+  xlab("Date") +
+  ylab("Activity in workplaces (% change from baseline)") +
+  ggtitle("Time in workplaces decreased as UK lockdown measures were enforced,
+          and start to increase as lockdown measures relax",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y")
+print(work_date)
+```
+The frequency of visits to workplaces has not recovered to the baseline amount yet. 
+
+
+We look closer at the activity in workplaces for UK in the initial phase of lockdown. Since it is difficult to define precisely the 'first stage' of the pandemic in the UK, we look at the data from 24th February - 23rd March.
+```{r plot2, message=FALSE, echo=FALSE, warning=FALSE}
+FirstStageUKCaseData <- {UKCaseData %>% 
+    filter( (date > as.Date("2020-02-23")) & (date < as.Date("2020-03-24")) )}
+
+early_work_date <- {FirstStageUKCaseData %>% ggplot(aes(x = date,
+                                                y = gcmr_workplaces))} +
+  xlab("Date") +
+  ylab("Activity in workplaces (% change from baseline)") +
+  ggtitle("Time in workplaces in the initial phase of the epidemic",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  scale_x_date(date_breaks = "weeks", date_labels = "%d-%m-%y")
+print(early_work_date)
+```
+We see that the plot indicates negative exponential growth in the frequency of visits to workplaces.
+
+
+We look at how the frequency of visits to workplaces has changed for countries in Europe and America, in particular we look at the following countries: Brazil, France, Germany, Italy, Mexico, Romania, Russia, Spain, United Kingdom and United States. 
+
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+library(stringr)
+Eur.Usa <- {CovidData %>% 
+    filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) ) %>%
+    select(country, date, gcmr_workplaces)}
+
+Eur.Usa.sample <- {CovidData %>% 
+    filter(country %in% c("Germany", "United Kingdom", "France", "Russia", 
+                          "Italy", "Romania", "Brazil", "United States", 
+                          "Spain", "Mexico")) %>%
+    select(country, date, gcmr_workplaces) %>%
+    na.omit}
+```
+
+```{r plot3, message=FALSE, echo=FALSE, warning=FALSE}
+EURUSA_work_date <- {Eur.Usa.sample %>% ggplot(aes(x = date,
+                                            y = gcmr_workplaces,
+                                            color = country))} +
+  xlab("Date") +
+  ylab("Activity in workplaces (% change from baseline)") +
+  ggtitle("Time in workplaces against date",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y")
+print(EURUSA_work_date)
+```
+We see that the trend for the UK is similar in other countries, however some countries have an increase in workplace activity in March, such as Brazil and Romania.
+
+We look closer at the activity in workplaces for these countries for the time of initial phase of UK lockdown i.e the data from 24th February - 23rd March.
+
+```{r plot4, message=FALSE, echo=FALSE, warning=FALSE}
+FirstStageEURUSAData <- {Eur.Usa.sample %>% 
+    filter( (date > as.Date("2020-02-23")) & (date < as.Date("2020-03-24")) )}
+
+EURUSA_early_work_date <- {FirstStageEURUSAData %>% ggplot(aes(x = date,
+                                                y = gcmr_workplaces,
+                                                color=country))} +
+  xlab("Date") +
+  ylab("Activity in workplaces (% change from baseline)") +
+  ggtitle("Time in workplaces in the initial phase of the epidemic",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  scale_x_date(date_breaks = "weeks", date_labels = "%d-%m-%y")
+print(EURUSA_early_work_date)
+
+```
+
+
+We now look at how the stay at home restrictions changed during the pandemic so we look at the `C6_Stay at home requirements` indicator variable:
+
+0 - no measures
+
+1 - recommend not leaving house
+
+2 - require not leaving house with exceptions for daily exercise, grocery shopping, and 'essential' trips
+
+3 - require not leaving house with minimal exceptions (eg allowed to leave once a week, or only one person can leave at a time, etc)
+
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+library(rio)
+GovData <- 
+  import("https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv", 
+    setclass = "tibble")
+
+Gov_Data <- {GovData %>%
+  mutate(Date = as.Date(parse_date_time(GovData$Date,orders=c("y","ym","ymd")))) %>%
+    select(CountryName, Date, `C6_Stay at home requirements`)}
+
+UKGovData <- {Gov_Data %>% 
+    filter(CountryName == "United Kingdom")}
+```
+
+We look specifically at how Stay at Home restrictions changed for the UK.
+
+```{r plot5, message=FALSE, echo=FALSE, warning=FALSE}
+homeUK_date <- {UKGovData %>% ggplot(aes(x = Date,
+                                      y = `C6_Stay at home requirements`))} +
+  xlab("Date") +
+  ylab("Stay at home requirements") +
+  ggtitle("How UK Stay at home requirements changed with time",
+           subtitle = "Drawn from Oxford Government Response Data") +
+  geom_point() +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y")
+print(homeUK_date)
+```
+
+We look more closely at how these restrictions changed during the initial phase of the pandemic but take data from 24th February - 23rd May).
+
+```{r plot6, message=FALSE, echo=FALSE, warning=FALSE}
+FirstStageUKGovData <- {UKGovData %>% 
+    filter( (Date > as.Date("2020-02-23")) & (Date < as.Date("2020-05-24")) )}
+
+early_homeUK_date <- {FirstStageUKGovData %>% ggplot(aes(x = Date,
+                                                y = `C6_Stay at home requirements`))} +
+  xlab("Date") +
+  ylab("Stay at home requirements") +
+  ggtitle("UK Stay at home requirements in the initial phase of the epidemic",
+           subtitle = "Drawn from Oxford Government Response Data") +
+  geom_point() +
+  scale_x_date(date_breaks = "weeks", date_labels = "%d-%m-%y")
+early_homeUK_date + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+## References
+
+Gassen, 2020, *Download, Tidy and Visualize Covid-19 Related Data*. [online] Available at: <https://joachim-gassen.github.io/tidycovid19/>
+
+Google, 2020. *COVID-19 Community Mobility Report*. [online] Available at: <https://www.google.com/covid19/mobility/>
+
+Oxford, 2020. *Coronavirus Government Response Tracker*. [online] Available at: <https://www.bsg.ox.ac.uk/research/research-projects/coronavirus-government-response-tracker#data>

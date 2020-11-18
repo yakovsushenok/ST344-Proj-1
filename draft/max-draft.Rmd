@@ -1,0 +1,10 @@
+---
+title: "Max Draft Report"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Using [Google Trends](https://trends.google.com/trends/) data on the search volume for various terms, we can investigate the general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of people.

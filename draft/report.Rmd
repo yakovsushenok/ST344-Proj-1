@@ -1,4 +1,12 @@
-# Draft Report
+---
+title: "Draft Report"
+author: "Team 7"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
 
 If everyone could put their draft reports in their corresponding sections by Friday 20th Nov Morning for the meeting, that would be great. This document is meant to be the first draft of many and we be by no means complete.
 
@@ -13,5 +21,37 @@ If everyone could put their draft reports in their corresponding sections by Fri
 # Section 4: Recreation and retail (Vincent P)
 
 # Section 5: Google Trends (Max)
+
+Using [Google Trends](https://trends.google.com/trends/) data on the search volume for various terms, we can investigate the general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of these regions.
+
+We will investigate the search terms `restaurants` and `take-out`, the two can be seen as the compliment of one another. We will plot a graph of the average interest for these terms throughout European, North, Central and South American countries. The y axis represents search interest relative to the highest point on the chart for the given region and time. A value of 100 is the peak popularity for the term. A value of 50 means that the term is half as popular.
+
+```{r chunk1}
+library(dplyr)
+library(readxl)
+library(lubridate)
+RestaurantTrendData <- read.csv("gt_restaurants.csv")
+TakeOutTrendData <- read.csv("gt_take_out.csv")
+
+RestaurantTrendData <- RestaurantTrendData %>%
+  mutate(date = as.Date(parse_date_time(RestaurantTrendData$Week,c("d/m/y"))))
+TakeOutTrendData <- TakeOutTrendData %>%
+  mutate(date = as.Date(parse_date_time(TakeOutTrendData$Week,c("d/m/y"))))
+
+library(ggplot2)
+plot_restuarants_trends <- ggplot(RestaurantTrendData, aes(x = date, y = interest)) +
+  geom_line(aes(color='red')) +
+  geom_line(data=TakeOutTrendData, aes(color='blue', labels='restaurants')) +
+  xlab("Date") +
+  ylab("Interest") +
+  ggtitle("Interest in Restaurants and Take-Out have a inverse relationship", 
+          subtitle="Y-axis represents search interest relative to the highest point") +
+  scale_x_date(date_breaks = "months", date_labels = "%m-%y") + 
+  scale_color_manual(labels = c("take-out", "restaurants"), values = c("blue", "red")) +
+  guides(color=guide_legend("Search Term"))
+
+
+print(plot_restuarants_trends)
+```
 
 # Conclusion (Everyone)

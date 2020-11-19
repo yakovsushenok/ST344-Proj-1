@@ -38,3 +38,4 @@ plot_restuarants_trends <- ggplot(RestaurantTrendData, aes(x = date, y = interes
 
 print(plot_restuarants_trends)
 ```
+The plot above shows that the two search terms' interest have an inverse relationship. As we can see, when lockdown and restrictions began to be imposed by governments, consumer interest in `restaurants` decreased whereas interest in `take-out` increased at a similar magnitude. This shows that in lockdowns, consumers are looking to buy more food online, possibly due to sit-in restaurants being closed or people scared to go out in public. This indicates that we, OmniCorp, should focus on online retail and hospitality when lockdown measures are introduced. It is also important to note that the interest in `restaurants` increased back to normal levels almost as fast as it fell. However, it had a smaller, more steady decrease as a second wave of restrictions took place whereas `takeout` did not have a similar magnitude of increase.

@@ -162,6 +162,62 @@ As we look at August we can see another rise in COVID-19 cases, this is where th
 
 # Section 3: Grocery and pharmancy (Jacob)
 
+To see how the trend of staying home has affected the retail and hospitality industry, we will start investigating consumer habits and how they changed throughout the pandemic. 
+
+To have a broader view of the impact of lockdowns on retail and hospitality, we need to examine the more fundamental parts of people's consumer habits. We first start by investigating people's visits to grocery shops and pharmacies. Although this sector isn't directly connected to retail and hospitality, the principles are the same - they sell goods to consumers directly. To understand the willingness of people to go outside and buy clothes, we need to first understand their willingness to go to a grocery shop or pharmacy.
+
+Below you can see a graph depicting average the percentage change in the frequency of people's visits to grocery stores and pharmacies, relative to a baseline period Jan3- Feb 6, 2020 of the three regions Omnicorp is operating in.
+
+
+```{r echo=TRUE}
+library(readxl)
+CovidData <- read.csv("tidycovid19.csv")
+```
+```{r echo=TRUE,warning=FALSE}
+library(lubridate)
+CovidData$date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd")))
+```
+```{r echo=TRUE}
+library(dplyr)
+confirmedData <- {CovidData %>% 
+    select(date, confirmed, gcmr_grocery_pharmacy) }
+```
+```{r echo=TRUE}
+library(stringr)
+EuropeAmericaDataPostFeb6 <- {CovidData %>% 
+    filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) & (date > as.Date("2020-02-06")) )}
+```
+```{r echo=TRUE,warning=FALSE}
+groceryData = {EuropeAmericaDataPostFeb6 %>% 
+    group_by(country) %>% 
+    summarise(
+              total_confirmed = max(confirmed),
+              mean_gcmr_grocery_pharmacy = mean(gcmr_grocery_pharmacy),
+              pop_largest_city = mean(pop_largest_city ))}
+```
+```{r echo=TRUE,warning=FALSE}
+mean_ <- function(...) mean(..., na.rm=T)
+max_ <- function(...) max(..., na.rm=T)
+groceryData = {EuropeAmericaDataPostFeb6 %>% 
+    group_by(country) %>% 
+    summarise(
+              total_confirmed = max_(confirmed),
+              mean_gcmr_grocery_pharmacy = mean_(gcmr_grocery_pharmacy),
+              pop_largest_city = mean(pop_largest_city ))}
+```
+```{r echo=TRUE,warning=FALSE}
+library(ggplot2)
+EuropeAmericaDataPostFeb6_copy=EuropeAmericaDataPostFeb6
+plot1 <- {EuropeAmericaDataPostFeb6_copy %>% ggplot(aes(x=date,     
+                                            y=gcmr_grocery_pharmacy,color=region))} +
+    geom_point(alpha=0.1,size=0.5)+geom_smooth()+scale_colour_discrete(labels = c('Europe', 'South America',"North America"))+xlab("Date")+ylab("Visits to grocery and pharmacies")+geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2)+annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of Lockdown")
+print(plot1)
+```
+We see a sharp decline in visits starting in March and continuing until the start of September. South America has been affected more heavily than the others, as there have been more strict and continuous lockdown measures, as seen in [figure #](reference to VC's pic of South America's lockdown graph). Although we see South America recovers slower, we should take into consideration the fact that during these months, the southern hemisphere is in Winter, and during winter people tend to stay home more. 
+
+
+
+
 # Section 4: Recreation and retail (Vincent P)
 
 # Section 5: Google Trends (Max)

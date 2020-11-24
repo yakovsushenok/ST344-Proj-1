@@ -216,7 +216,7 @@ EURUSA1 = {EURUSA.postFeb6 %>%
 
 ## UK Data
 
-We start by looking at how the frequency of visits to residential places has changed for UK. (need to delete one of graphs - wasn't sure if point or line graph better).
+We start by looking at how the frequency of visits to residential places has changed for UK.
 
 ```{r UKhomeplot, message=FALSE, echo=FALSE, warning=FALSE}
 library(ggplot2)
@@ -236,7 +236,7 @@ print(home_date)
 We note that there is an obvious increase in the time spent at home as lockdown is enforced on 24th March. In particular, the baseline measurement for activity in residential places is exceeded from this time onwards. However, we also see that the activity in residential places since is very volatile.
 
 
-We now look at how the frequency of visits to workplaces has changed for UK. (need to delete one of graphs - wasn't sure if point or line graph better).
+We now look at how the frequency of visits to workplaces has changed for UK.
 
 ```{r UKworkplot, message=FALSE, echo=FALSE, warning=FALSE}
 
@@ -253,7 +253,7 @@ work_date <- {UKCaseData %>% ggplot(aes(x = date,
 print(work_date)
 
 ```
-There is a dramtic decrease in the frequency of visits to workplaces since the UK lockdown is implemented on 24th March. The frequency of visits to workplaces does not recover to the baseline amount, even at the end of the time period it is far from it. 
+There is a dramatic decrease in the frequency of visits to workplaces since the UK lockdown is implemented on 24th March. The frequency of visits to workplaces does not recover to the baseline amount, even at the end of the time period it is far from it. 
 
 We see from these graphs that the `gcmr_residential` and `gcmr_workplaces` variables have an inverse relationship. We take a look at these variables for the UK on a single graph.
 

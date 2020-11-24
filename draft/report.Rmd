@@ -220,6 +220,33 @@ We see a sharp decline in visits starting in March and continuing until the star
 
 # Section 4: Recreation and retail (Vincent P)
 
+To help Omnicorp to get a general picture on how pandemic impacted the whole retailing and recreation industries, we now investigate the change of activities of retailing and recreational places people visited from a baseline level. 
+
+
+Furthermore, we are not only interested in the offline retailing data collected by COVID19??(ensure later), we would like to know how online business activities changed. Yet first, let's see the development of internet users in the three continents.
+
+```{r}
+library(rio)
+library(dplyr)
+intuserdata<-import('internet_users.xlsx',setclass='tibble')
+```
+```{r}
+library(tidyr)
+Tidy_Data <- pivot_longer(intuserdata, !country, names_to= 'year', values_to = 'percentage')
+tidydata<-filter(Tidy_Data,year %in% c(1980:2018))
+```
+```{r}
+newuserdata <- merge(x=tidydata,y=Countries,all.x = TRUE)
+newuserdata<- filter(newuserdata,continent=='Europe'|continent=='North America'|continent=='South America')
+mean_ <- function(...) mean(..., na.rm=T)
+averageline<-{newuserdata %>% group_by(continent)%>% summarise(mean_percentage=mean_(percentage),year=year)}
+```
+```{r fig.height=5,fig.width=9}
+library(ggplot2)
+intuserplot<-ggplot(newuserdata,aes(x=year,y=percentage,group=continent,color=continent,shape=continent))+geom_point()+labs(x='Year',y='percentage of internet user') 
+print(intuserplot)
+```
+
 # Section 5: Google Trends (Max)
 
 Using [Google Trends](https://trends.google.com/trends/) data on the search volume for various terms, we can investigate the general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of these regions.

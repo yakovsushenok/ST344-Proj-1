@@ -61,6 +61,7 @@ EURUSA1 = {EURUSA.postFeb6 %>%
 We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America.
 
 ```{r plot2, message=FALSE, echo=FALSE, warning=FALSE}
+library(ggplot2)
 EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,
                                             color=region))} +

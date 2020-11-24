@@ -58,10 +58,25 @@ EURUSA1 = {EURUSA.postFeb6 %>%
 ```
 
 ## Activity in residential places and workplaces in Europe and America
-We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America.
+We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). 
+
 ```{r workVhome, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
 library(ggplot2)
 EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
+                                            y = mean_gcmr_workplaces))} +
+  xlab("Activity in residential (% change from baseline)") +
+  ylab("Activity in workplaces (% change from baseline)") +
+  ggtitle("Time in workplaces decreases as time in residential places increases",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  geom_smooth(method = loess)
+print(EURUSA_home_work)
+
+```
+
+We look particularly at the trends for Europe, North America and South America.
+```{r workVhomereg, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
+EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,
                                             color=region))} +
   xlab("Activity in residential (% change from baseline)") +
@@ -70,7 +85,7 @@ EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
   geom_smooth(method = loess)
-print(EURUSA_home_work)
+print(EURUSA_home_work_regs)
 
 ```
 We see from this plot that as the time spent in workplaces decreases, the time spent in residential places increases, and this is true across the regions.

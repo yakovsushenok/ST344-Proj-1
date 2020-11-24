@@ -1,5 +1,5 @@
 ---
-title: "Residential and Workplaces"
+title: "Residential and Workplace"
 author: "Becky Waller"
 urlcolor: blue
 output: pdf_document
@@ -14,7 +14,7 @@ Since the large impacts of the pandemic on OmniCorp, particularly in the retail 
 
 In the following, we will use the [dataset](https://moodle.warwick.ac.uk/mod/resource/view.php?id=1023429) "tidycovid19.csv", downloaded from the tidycovid19 R package on 24th September 2020. Descriptions of the different variables found in the data relating to the current epidemic and further details of the package can be found at this [website](https://joachim-gassen.github.io/tidycovid19/) (Gassen 2020).
 
-We look at how the frequency of people visiting residential places and workplaces has changed during the pandemic for countries in Europe and America. In particular we study the `gcmr_residential` `gcmr_workplaces` variables from a community mobility report (Google, 2020). The variables are expressed as a percentage*100 change relative to the baseline period Jan 3 - Feb 6, 2020. However, we take the data from Feb 7 onwards as we want to look at the average percentage change in the frequency of people's visits to these places, and don't want to include the baseline in this mean.
+We look at how the frequency of people visiting residential places and workplaces has changed during the pandemic for countries in Europe and America. In particular, we study the `gcmr_residential` `gcmr_workplaces` variables from a community mobility report (Google, 2020). The variables are expressed as a percentage*100 change relative to the baseline period Jan 3 - Feb 6, 2020. However, we take the data from Feb 7, as we want to look at the average percentage change in the frequency of people's visits to these places, and don't want to include the baseline in this mean.
 
 ```{r read, message=FALSE, echo=FALSE, warning=FALSE}
 library(dplyr)
@@ -57,10 +57,9 @@ EURUSA1 = {EURUSA.postFeb6 %>%
 
 ```
 
-## Activity in residentials places and workplaces in Europe and America
+## Activity in residential places and workplaces in Europe and America
 We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America.
-
-```{r plot2, message=FALSE, echo=FALSE, warning=FALSE}
+```{r workVhome, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
 library(ggplot2)
 EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,

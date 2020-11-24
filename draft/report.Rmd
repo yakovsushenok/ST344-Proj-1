@@ -14,6 +14,150 @@ If everyone could put their draft reports in their corresponding sections by Fri
 
 # Section 1: Overview of lockdown (Vincent C)
 
+# Overview of the spread of COVID-19
+We will have a brief look into COVID-19 and its progression over the regions Europe, North America, Central America and South America. We will demonstrate how this virus escalated among the top 6 largest countries (by population) for each region by analyzing a few variables. The key variables that I believe displays this the best are the number of daily confirmed infections (as a % of the total population), the number of confirmed infections (as a % of the total population), and the number of lockdown measures for each country.
+
+The number of lockdown measures will give us a high level overview into the response from governments as a result of the COVID-19 pandemic.
+
+```{r step1, warning=FALSE, include=FALSE}
+library(readxl)
+CovidData <- read.csv("tidycovid19.csv")
+```
+
+```{r step2 date setup, message=FALSE, warning=FALSE, include=FALSE}
+library(lubridate)
+CovidData$date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd")))
+
+```
+
+```{r step2 obtain cases per day, message=FALSE, warning=FALSE, include=FALSE}
+library(dplyr)
+firstdiff <- function(x) {
+  shifted <- c(0,x[1:(length(x)-1)])
+  result = x-shifted
+  which_negative = which(result<0)
+  result[which_negative] = NA
+  return(result)
+}
+
+```
+
+```{r step 2 task2, message=FALSE, warning=FALSE, include=FALSE}
+library(stringr)
+EuropeAmericaDataPostFeb6 <- {CovidData %>% 
+    filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) & (date > as.Date("2020-02-06")) )}
+```
+
+```{r daily confirmed, include=FALSE}
+# Add a column so we can see the daily confirmed cases of covid19
+EuropeAmericaDataPostFeb6 <- EuropeAmericaDataPostFeb6 %>% 
+  mutate(daily_confirmed = firstdiff(confirmed))
+```
+
+## North America and Central America
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+AmericaData <- EuropeAmericaDataPostFeb6 %>%
+  filter(str_detect(region, "America"))
+
+AmericaData <- AmericaData %>% mutate(daily_conf_percentagepop = (daily_confirmed/population)*100)
+
+AmericaData <- AmericaData %>% mutate(confirmed_percentagepop = (confirmed/population)*100)
+
+```
+
+
+```{r echo=FALSE, fig.align="center", message=FALSE, warning=FALSE}
+NorthCentralAmericaData <- AmericaData %>% filter(country %in% c("United States", "Mexico", "Canada", "Guatemala", "Cuba", "Haiti"))
+
+TotalNorthCentralAmericaConfirmed_percen <- ggplot(NorthCentralAmericaData, aes(x = date, y = confirmed_percentagepop, color = country)) + geom_line(size = 0.5)+ ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
+
+DailyNorthCentralAmericaConfirmed <- ggplot(NorthCentralAmericaData, aes(x = date, y = daily_conf_percentagepop, color = country)) + geom_line(size = 0.5)  + ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
+
+
+NorthCentralAmericaLockdown <- ggplot(NorthCentralAmericaData, aes(x = date, y = lockdown, color = country)) + geom_line(size = 2) + ylab("Number of lockdown measures") + xlab("Date")
+
+```
+
+```{r Lockdownplot, echo=FALSE, message=FALSE, warning=FALSE, out.width="75%", fig.align = "center"}
+print(NorthCentralAmericaLockdown)
+```
+
+```{r NCA plot,echo=FALSE, message=FALSE, warning=FALSE, out.width = "100%"}
+library(ggpubr)
+
+ggarrange(DailyNorthCentralAmericaConfirmed, TotalNorthCentralAmericaConfirmed_percen, ncol=2, nrow=1, common.legend = TRUE, legend="bottom")
+```
+
+
+From our plot, we can see that in the US and Canada the COVID-19 begun to take off around early April. However, for the other countries in this region the virus impacted them around May. We can see from the Lockdown Measures plot that the US and Canada had 0 measures in place to contain the virus, this must explain why they had a large number of cases early. We can also see that the other countries implemented lockdown measures around April, with Guatemala being the exception.
+
+
+## South America
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+SouthAmericaData <- AmericaData %>% filter(country %in% c("Brazil", "Colombia", "Argentina", "Peru", "Venezuela", "Chile"))
+
+TotalSouthAmericaConfirmed_percen <- ggplot(SouthAmericaData, aes(x = date, y = confirmed_percentagepop, color = country)) + geom_line(size = 0.5)+ ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
+
+DailySouthAmericaConfirmed <- ggplot(SouthAmericaData, aes(x = date, y = daily_conf_percentagepop, color = country)) + geom_line(size = 0.5) + ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
+
+
+SouthAmericaLockdown <- ggplot(SouthAmericaData, aes(x = date, y = lockdown, color = country)) + geom_line(size = 2) + ylab("Number of lockdown measures") + xlab("Date")
+
+```
+```{r Lockdownplot2, echo=FALSE, message=FALSE, warning=FALSE, out.width="75%", fig.align = "center"}
+print(SouthAmericaLockdown)
+```
+
+```{r SA plot,echo=FALSE, message=FALSE, warning=FALSE, out.width = "100%"}
+library(ggpubr)
+
+ggarrange(DailySouthAmericaConfirmed, TotalSouthAmericaConfirmed_percen, ncol=2, nrow=1, common.legend = TRUE, legend="bottom")
+```
+
+
+From these set of graphs we can see that the the number of confirmed COVID-19 cases as a percentage of the population steadily rose later than in North and Central America. The cases started to rising around May. However, all the countries had at least one lockdown in early April, this may be one of the reasons why it impacted the countries in South America later than North and Central America. Looking at the daily confirmed cases as a percentage of the population, we can see a growing increase of the infections in May. There is an unexpected result in the graph of the number of lockdown measures for Venezuela is showing a negative value between mid May to mid August. I could not find anything to explain this result.
+
+
+## Europe
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+EuropeData <- EuropeAmericaDataPostFeb6 %>%
+  filter(str_detect(region, "Europe"))
+
+EuropeData <- EuropeData %>% mutate(daily_conf_percentagepop = (daily_confirmed/population)*100)
+
+EuropeData <- EuropeData %>% mutate(confirmed_percentagepop = (confirmed/population)*100)
+
+EuropeData <- EuropeData %>% filter(country %in% c("Russia", "Turkey", "Germany", "France", "United Kingdom", "Italy"))
+
+TotalEuropeConfirmed_percen <- ggplot(EuropeData, aes(x = date, y = confirmed_percentagepop, color = country)) + geom_line(size = 0.5)+ ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
+
+DailyEuropeConfirmed <- ggplot(EuropeData, aes(x = date, y = daily_conf_percentagepop, color = country)) + geom_line(size = 0.5) + ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
+
+
+EuropeLockdown <- ggplot(EuropeData, aes(x = date, y = lockdown, color = country)) + geom_line(size = 2) + ylab("Number of lockdown measures") + xlab("Date")
+
+```
+
+```{r Lockdownplot3, echo=FALSE, message=FALSE, warning=FALSE, out.width="75%", fig.align = "center"}
+print(EuropeLockdown)
+```
+
+```{r Europe plot,echo=FALSE, message=FALSE, warning=FALSE, out.width = "100%"}
+library(ggpubr)
+
+ggarrange(DailyEuropeConfirmed, TotalEuropeConfirmed_percen, ncol=2, nrow=1, common.legend = TRUE, legend="bottom")
+```
+
+
+
+Looking at the daily confirmed COVID-19 cases for Italy that the number of cases were on the rise in mid March. Other countries like France, Germany, United Kingdom and Turkey followed shortly afterwards in April. The spread of COVID-19 for Russia was roughly a month later than the other countries. Looking at the lockdown measures, by the beginning of April all the countries had at least one lockdown measure to help contain COVID-19.
+As we look at August we can see another rise in COVID-19 cases, this is where the second wave of COVID-19 occurred in Europe.
+
+
+
 # Section 2: Residential and workplace (Becky)
 
 # Section 3: Grocery and pharmancy (Jacob)

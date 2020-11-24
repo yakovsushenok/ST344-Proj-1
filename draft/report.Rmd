@@ -506,19 +506,19 @@ intuserdata<-import('internet_users.xlsx',setclass='tibble')
 ```
 ```{r}
 library(tidyr)
-Tidy_Data <- pivot_longer(intuserdata, !country, names_to= 'year', values_to = 'percentage')
-tidydata<-filter(Tidy_Data,year %in% c(1980:2018))
+#Tidy_Data <- pivot_longer(intuserdata, !country, names_to= 'year', values_to = 'percentage')
+#tidydata<-filter(Tidy_Data,year %in% c(1980:2018))
 ```
 ```{r}
-newuserdata <- merge(x=tidydata,y=Countries,all.x = TRUE)
-newuserdata<- filter(newuserdata,continent=='Europe'|continent=='North America'|continent=='South America')
-mean_ <- function(...) mean(..., na.rm=T)
-averageline<-{newuserdata %>% group_by(continent)%>% summarise(mean_percentage=mean_(percentage),year=year)}
+#newuserdata <- merge(x=tidydata,y=Countries,all.x = TRUE)
+#newuserdata<- filter(newuserdata,continent=='Europe'|continent=='North America'|continent=='South America')
+#mean_ <- function(...) mean(..., na.rm=T)
+#averageline<-{newuserdata %>% group_by(continent)%>% summarise(mean_percentage=mean_(percentage),year=year)}
 ```
 ```{r fig.height=5,fig.width=9}
 library(ggplot2)
-intuserplot<-ggplot(newuserdata,aes(x=year,y=percentage,group=continent,color=continent,shape=continent))+geom_point()+labs(x='Year',y='percentage of internet user') 
-print(intuserplot)
+#intuserplot<-ggplot(newuserdata,aes(x=year,y=percentage,group=continent,color=continent,shape=continent))+geom_point()+labs(x='Yea#r',y='percentage of internet user') 
+#print(intuserplot)
 ```
 
 # Section 5: Google Trends (Max)

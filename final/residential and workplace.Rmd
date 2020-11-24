@@ -1,5 +1,5 @@
 ---
-title: "residential and workplace"
+title: "Residential and Workplaces"
 author: "Becky Waller"
 urlcolor: blue
 output: pdf_document

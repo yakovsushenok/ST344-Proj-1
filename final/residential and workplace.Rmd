@@ -124,18 +124,18 @@ We also note that there was a greater average activity in residential places in 
 
 
 We look closer at the relationship of activity in residential places against activity in workplaces for Europe, North America and South America individually, to identify any outliers in the trend and identify why these might occur.
-```{r workVhomeEUR, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left', fig.show='hide'}
-EURUSA_home_work_UK <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
+```{r workVhomeEUR, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
+EUR_home_work <- {EUR %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,
-                                            color=region))} +
+                                            color=country))} +
   xlab("Activity in residential (% change from baseline)") +
   ylab("Activity in workplaces (% change from baseline)") +
   ggtitle("Time in workplaces decreases as time in residential places increases
-          across Europe, North America and South America",
+          across Europe",
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
   geom_smooth(method = loess)
-print(EURUSA_home_work_UK)
+print(EUR_home_work)
 
 ```
 

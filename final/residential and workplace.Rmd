@@ -110,11 +110,14 @@ EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
   geom_point() +
   geom_smooth(method = loess, linetype = "dashed") +
   stat_smooth(method = "lm") +
-  geom_abline(intercept = -18.5, slope = -1, color="black", size=1)
+  geom_abline(intercept = signif(lm.homework$coef[[1]],5),
+              slope = signif(lm.homework$coef[[2]],5), color="black", size=1) +
+  labs(caption = paste("Linear model for all countries: ",
+                       "Intercept =",signif(lm.homework$coef[[1]],5),
+                       " Slope =",signif(lm.homework$coef[[2]],5)))
 print(EURUSA_home_work_regs)
 
 ```
-The intercept value of the linear model for all countries is -18.468 and the slope is -0.972.
 
 We see from this plot that the general trend is as the time spent in workplaces decreases, the time spent in residential places increases. We see that when looking at each region in isolation, a linear relationship is a fairly good model, and reflects the general trend of all countries. The linear relationship between time in residential places and time in workplaces is arguably stronger when looking at regions individually, with the strongest linear relationship is in South America. In fact, the linear model for South America is a very good fit.
 
@@ -171,6 +174,8 @@ NUSA_home_work <- {N.USA1 %>% ggplot(aes(x = mean_gcmr_residential,
 ggarrange(NUSA_home_work, legend="right")
 
 ```
+By reducing to just six countries we see that the linear model changes a fair bit, and shows that there isn't as strong decrease in time spent in workplaces as the time spent at home increases. This might be due to the fact that Canada and United States are left in this sample, and they did not choose to enforce as strong lockdown measures as some other countries.
+
 
 ```{r workVhomeSUSA, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
 lm.SUSAhomework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = S.USA)
@@ -194,7 +199,7 @@ SUSA_home_work <- {S.USA1 %>% ggplot(aes(x = mean_gcmr_residential,
 ggarrange(SUSA_home_work, legend="right")
 
 ```
-
+The intercept for the linear model for South America is a positive value, whilst the intercepts for the Europe and North America linear models are both negative. The slope for South America is also a larger negative value, whilst the slope for Europe and North America are fairly similar. Both these measurements indicate that there must be a cause for why South America is different, whilst Europe and North America are almost the same. This could be due to the fact that Europe and North America are both in the Northern Hemisphere, and South America in the Southern Hemisphere.
 
 
 We have looked at the relationship for time in residential places against the time in workplaces during the pandemic this year and come to the conclusion that there is a linear relationship where as the time in workplaces decreases, the time in residential places increases. We go on to study how this affects activity in retail and hospitality services. As lockdown measures are implemented, people are asked to stay at home. This decreases the amount of people going into workplaces, and in turn decreases the activity in retail and hospitality services. A plausible reason for this might be since less people are going into workplaces, there is less people directly walking past shops before, during and after work, so less overall activity.

@@ -64,10 +64,19 @@ N.USA <- {EURUSA1 %>%
 S.USA <- {EURUSA1 %>%
     filter(region == "South America")}
 
+EUR1 <- {EUR %>%
+    filter(country %in% c("France","Germany","Italy","Russia","Turkey","United Kingdom"))}
+
+N.USA1 <- {N.USA %>%
+    filter(country %in% c("Canada","Cuba","Guatemala","Haiti","Mexico","United States"))}
+
+S.USA1 <- {S.USA %>%
+    filter(country %in% c("Argentina","Brazil","Chile","Colombia","Peru","Venezuela"))}
+
 ```
 
 ## Activity in residential places and workplaces in Europe and America
-We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America.
+We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America. We fit a linear model as well as the best line of fit and see that a linear relationship between the variables fits fairly well.
 
 ```{r workVhome, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
 library(ggplot2)
@@ -75,75 +84,125 @@ EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces))} +
   xlab("Activity in residential (% change from baseline)") +
   ylab("Activity in workplaces (% change from baseline)") +
-  ggtitle("Time in workplaces decreases as time in residential places increases
-          in Europe and America",
+  ggtitle("Time in workplaces decreases as time in residential places 
+  increases in Europe and America",
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
-  geom_smooth(method = loess)
+  geom_smooth(method = loess, linetype = "dashed") +
+  stat_smooth(method = "lm")
 print(EURUSA_home_work)
 
 ```
 
+We now separate the plot into the different regions to see if the relationships of the variables differ between the regions. We also fit a linear model between `mean_gcmr_workplaces` and `mean_gcmr_residential` for all countries in Europe and America and plot this linear relationship on the graph, as well as the individual linear trends for each region.
 
-```{r workVhomereg, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
+```{r workVhomereg, message=FALSE, echo=FALSE, warning=FALSE}
+lm.homework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = EURUSA1)
+
 EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,
                                             color=region))} +
   xlab("Activity in residential (% change from baseline)") +
   ylab("Activity in workplaces (% change from baseline)") +
-  ggtitle("Time in workplaces decreases as time in residential places increases
-          across Europe, North America and South America",
+  ggtitle("Time in workplaces decreases as time in residential places 
+  increases across Europe, North America and South America",
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
-  geom_smooth(method = loess)
+  geom_smooth(method = loess, linetype = "dashed") +
+  stat_smooth(method = "lm") +
+  geom_abline(intercept = signif(lm.homework$coef[[1]],5),
+              slope = signif(lm.homework$coef[[2]],5), color="black", size=1) +
+  labs(caption = paste("Linear model for all countries: ",
+                       "Intercept =",signif(lm.homework$coef[[1]],5),
+                       " Slope =",signif(lm.homework$coef[[2]],5)))
 print(EURUSA_home_work_regs)
 
 ```
-We fit a linear model between `mean_gcmr_workplaces` and `mean_gcmr_residential` of all countries in Europe and America and find the intercept value to be -18.468 and the slope to be -0.972. We plot this linear relationship on a graph against the individual trends of each region. 
-```{r workVhomereg2, message=FALSE, echo=FALSE, warning=FALSE}
-lm.homework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = EURUSA1)
 
-EURUSA_home_work_regs2 <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
-                                            y = mean_gcmr_workplaces,
-                                            color=region))} +
-  xlab("Activity in residential (% change from baseline)") +
-  ylab("Activity in workplaces (% change from baseline)") +
-  ggtitle("Time in workplaces decreases as time in residential places increases
-          across Europe, North America and South America",
-           subtitle = "Drawn from Google Community Mobility Reports") +
-  geom_point() +
-  stat_smooth(method = "lm") +
-  geom_abline(intercept = -18.5, slope = -1, color="black", size=1)
-print(EURUSA_home_work_regs2)
+We see from this plot that the general trend is as the time spent in workplaces decreases, the time spent in residential places increases. We see that when looking at each region in isolation, a linear relationship is a fairly good model, and reflects the general trend of all countries. The linear relationship between time in residential places and time in workplaces is arguably stronger when looking at regions individually, with the strongest linear relationship is in South America. In fact, the linear model for South America is a very good fit.
 
-```
-
-We see from this plot that the general trend is as the time spent in workplaces decreases, the time spent in residential places increases. This relationship is reflected when looking at each region in isolation, and the linear relationship is arguably stronger. We see that the strongest linear relationship is in South America. 
-
-We also note that there was a greater average activity in residential places in South America than in Europe. However, this could be explained by the time period. We are looking at data from Feb 7 - Sept 20, and in this time period South America is predominantly in Autumn and Winter, in which people potentially stay at home more than in Spring and Summer, so there is potential for misleading data here.
+We also note that there was a greater overall average activity in residential places in South America than in Europe. However, this could be explained by the time period. We are looking at data from Feb 7 - Sept 20, and in this time period South America is predominantly in Autumn and Winter, in which people tend to stay at home more than in Spring and Summer, so there is potential for misleading data here.
 
 
-We look closer at the relationship of activity in residential places against activity in workplaces for Europe, North America and South America individually, to identify any outliers in the trend and identify why these might occur.
+We look closer at the relationship of activity in residential places against activity in workplaces for Europe, North America and South America individually, to identify any outliers in the trend and identify why these might occur. We select the same 6 countries as in our first section and plot these along with the linear trend for all countries in the region. We also plot a dashed linear trend which shows how the linear model changes when it is fit with just the six countries selected.
+
 ```{r workVhomeEUR, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
-EUR_home_work <- {EUR %>% ggplot(aes(x = mean_gcmr_residential,
+lm.EURhomework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = EUR)
+
+EUR_home_work <- {EUR1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,
                                             color=country))} +
   xlab("Activity in residential (% change from baseline)") +
   ylab("Activity in workplaces (% change from baseline)") +
-  ggtitle("Time in workplaces decreases as time in residential places increases
-          across Europe",
+  ggtitle("Time in workplaces decreases as time in residential places 
+  increases across Europe",
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
-  geom_smooth(method = loess)
-print(EUR_home_work)
+  stat_smooth(method = "lm", color="grey", linetype="dashed") +
+  geom_abline(intercept = signif(lm.EURhomework$coef[[1]],5),
+              slope = signif(lm.EURhomework$coef[[2]],5), color="black") +
+  labs(caption = paste("Linear model for all countries in Europe: ",
+                       "Intercept =",signif(lm.EURhomework$coef[[1]],5),
+                       " Slope =",signif(lm.EURhomework$coef[[2]],5)))
+
+library(ggpubr)
+ggarrange(EUR_home_work, legend="right")
 
 ```
 
 
 
+```{r workVhomeNUSA, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
+lm.NUSAhomework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = N.USA)
+
+NUSA_home_work <- {N.USA1 %>% ggplot(aes(x = mean_gcmr_residential,
+                                            y = mean_gcmr_workplaces,
+                                            color=country))} +
+  xlab("Activity in residential (% change from baseline)") +
+  ylab("Activity in workplaces (% change from baseline)") +
+  ggtitle("Time in workplaces decreases as time in residential places 
+  increases across North America",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  stat_smooth(method = "lm", color="grey", linetype="dashed") +
+  geom_abline(intercept = signif(lm.NUSAhomework$coef[[1]],5),
+              slope = signif(lm.NUSAhomework$coef[[2]],5), color="black") +
+  labs(caption = paste("Linear model for all countries in NA: ",
+                       "Intercept =",signif(lm.NUSAhomework$coef[[1]],5),
+                       " Slope =",signif(lm.NUSAhomework$coef[[2]],5)))
+
+ggarrange(NUSA_home_work, legend="right")
+
+```
+By reducing to just six countries we see that the linear model changes a fair bit, and shows that there isn't as strong decrease in time spent in workplaces as the time spent at home increases. This might be due to the fact that Canada and United States are left in this sample, and they did not choose to enforce as strong lockdown measures as some other countries.
 
 
-((We look closer at the activity in homes for these regions from 1st March - 11th Apr (note: these dates are subject to change from the data we gain from lockdowns). This is because we see a significant increase in activity in residential homes in this time period, as well as a significant decrease in activity in workplaces.))
+```{r workVhomeSUSA, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
+lm.SUSAhomework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = S.USA)
+
+SUSA_home_work <- {S.USA1 %>% ggplot(aes(x = mean_gcmr_residential,
+                                            y = mean_gcmr_workplaces,
+                                            color=country))} +
+  xlab("Activity in residential (% change from baseline)") +
+  ylab("Activity in workplaces (% change from baseline)") +
+  ggtitle("Time in workplaces decreases as time in residential places 
+  increases across South America",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  stat_smooth(method = "lm", color="grey", linetype="dashed") +
+  geom_abline(intercept = signif(lm.SUSAhomework$coef[[1]],5),
+              slope = signif(lm.SUSAhomework$coef[[2]],5), color="black") +
+  labs(caption = paste("Linear model for all countries in SA: ",
+                       "Intercept =",signif(lm.SUSAhomework$coef[[1]],5),
+                       " Slope =",signif(lm.SUSAhomework$coef[[2]],5)))
+
+ggarrange(SUSA_home_work, legend="right")
+
+```
+The intercept for the linear model for South America is a positive value, whilst the intercepts for the Europe and North America linear models are both negative. The slope for South America is also a larger negative value, whilst the slope for Europe and North America are fairly similar. Both these measurements indicate that there must be a cause for why South America is different, whilst Europe and North America are almost the same. This could be due to the fact that Europe and North America are both in the Northern Hemisphere, and South America in the Southern Hemisphere.
+
+
+We have looked at the relationship for time in residential places against the time in workplaces during the pandemic this year and come to the conclusion that there is a linear relationship where as the time in workplaces decreases, the time in residential places increases. We go on to study how this affects activity in retail and hospitality services. As lockdown measures are implemented, people are asked to stay at home. This decreases the amount of people going into workplaces, and in turn decreases the activity in retail and hospitality services. A plausible reason for this might be since less people are going into workplaces, there is less people directly walking past shops before, during and after work, so less overall activity.
 
 
 ## References

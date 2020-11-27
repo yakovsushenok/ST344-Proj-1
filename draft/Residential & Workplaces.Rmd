@@ -81,18 +81,6 @@ home_date <- {UKCaseData %>% ggplot(aes(x = date,
   scale_x_date(date_breaks = "months", date_labels = "%b-%y")
 print(home_date)
 
-home_date1 <- {UKCaseData %>% ggplot(aes(x = date,
-                                                y = gcmr_residential))} +
-  xlab("Date") +
-  ylab("Activity in residential places (% change from baseline)") +
-  ggtitle("Time in residential places increased as UK lockdown measures were 
-  enforced, and decrease as lockdown measures relax",
-           subtitle = "Drawn from Google Community Mobility Reports") +
-  geom_line() +
-  geom_smooth() +
-  scale_x_date(date_breaks = "months", date_labels = "%b-%y")
-print(home_date1)
-
 ```
 We note that there is an obvious increase in the time spent at home as lockdown is enforced on 24th March. In particular, the baseline measurement for activity in residential places is exceeded from this time onwards. However, we also see that the activity in residential places since is very volatile.
 
@@ -113,17 +101,6 @@ work_date <- {UKCaseData %>% ggplot(aes(x = date,
   scale_x_date(date_breaks = "months", date_labels = "%b-%y")
 print(work_date)
 
-work_date1 <- {UKCaseData %>% ggplot(aes(x = date,
-                                                y = gcmr_workplaces))} +
-  xlab("Date") +
-  ylab("Activity in workplaces (% change from baseline)") +
-  ggtitle("Time in workplaces decreased as UK lockdown measures were enforced,
-          and start to increase as lockdown measures relax",
-           subtitle = "Drawn from Google Community Mobility Reports") +
-  geom_line() +
-  geom_smooth() +
-  scale_x_date(date_breaks = "months", date_labels = "%b-%y")
-print(work_date1)
 ```
 There is a dramtic decrease in the frequency of visits to workplaces since the UK lockdown is implemented on 24th March. The frequency of visits to workplaces does not recover to the baseline amount, even at the end of the time period it is far from it. 
 

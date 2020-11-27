@@ -1,0 +1,251 @@
+---
+title: "Scraping data from google_cmr"
+author: "yakov"
+date: "20/11/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+  
+
+
+# Task 1
+
+
+```{r}
+glob_mob1=read.csv("https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv")
+```
+```{r}
+glob_mob=glob_mob1
+```
+
+
+Here I subset out the "Whole country" parts of the data. So no subregion data, only data for the whole country.
+
+```{r}
+library(dplyr)
+
+glob_mob=magrittr::extract(glob_mob,!names(glob_mob) %in% c("census_fips_code","sub_region_1","sub_region_2","metro_area","iso_3166_2_code"))
+
+```
+
+
+Now I do the function from the teacher, which he gave us on the labs:
+
+
+
+```{r echo=TRUE,warning=FALSE}
+library(lubridate)
+glob_mob$date = as.Date(parse_date_time(glob_mob$date,orders=c("y","ym","ymd")))
+```
+
+
+```{r}
+glob_mob<- {glob_mob %>% 
+    filter(date > as.Date("2020-02-06"))}
+```
+
+```{r}
+europe_list=c("Albania","Andorra","Armenia","Austria","Azerbaijan","Belarus","Belgium","Bosnia & Herzegovina","Bulgaria","Croatia","Cyprus","Czechia","Denmark","Estonia","Finland","France","Georgia","Germany","Greece","Hungary","Iceland","Ireland","Italy","Kazakhstan","Kosovo","Latvia","Liechtenstein","Lithuania","Luxembourg","Malta","Moldova","Monaco","Montenegro","Netherlands","Macedonia","Norway","Poland","Portugal","Romania","Russia","San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland","Turkey","Ukraine","United Kingdom","Faroe Islands","Gibraltar","Isle of Man","North Macedonia")
+
+NA_list=c("United States","Mexico","Canada","Guatemala","Cuba","Haiti","Dominican Republic","Honduras","El Salvador","Nicaragua","Costa Rica","Panama","Puerto Rico","Jamaica","Trinidad and Tobago","Guadeloupe","Martinique","Bahamas","Belize","Barbarbados","St. Lucia","St. Vincent & Grenadines","U.S. Virgin Islands","Grenada","Antigua & Barbuda","Dominica","Bermuda","Cayman Islands","Greenland","St. Kitts & Nevis","Sint Maarten","Turks & Caicos Islands","Saint Martin","British Virgin Islands","Barbados","Trinidad & Tobago")
+
+SA_list=c("Aruba","Brazil","Colombia","Argentina","Peru","Venezuela","Chile","Ecuador","Bolivia","Paraguay","Uruguay","Guyana","Suriname","French Guiana","Falkland Islands","CuraÃ§ao")
+
+
+glob_mob= glob_mob%>%
+  mutate(country_region_code=ifelse(country_region %in% NA_list,"North America",ifelse(country_region %in% SA_list,"South America",ifelse(country_region %in% europe_list,"Europe","NON"))))
+
+colnames(glob_mob)[colnames(glob_mob) == "country_region_code"] <- "region"
+
+colnames(glob_mob)[colnames(glob_mob) == "country_region"] <- "country"
+
+
+
+glob_mob=glob_mob[!(glob_mob$region=="NON"),]
+
+
+```
+
+
+
+
+Here I add the feature income from the dataset from the labs to the glob_mob dataset. I think now, the dataset glob_mob is ready to use
+
+
+
+
+```{r}
+mean_ <- function(...) mean(..., na.rm=T)
+max_ <- function(...) max(..., na.rm=T)
+groceryData = {glob_mob %>% 
+    group_by(country) %>% 
+    summarise(mean_grocery_pharmacy = mean_(grocery_and_pharmacy_percent_change_from_baseline),
+              mean_retail=mean_(retail_and_recreation_percent_change_from_baseline),
+              region=region)}
+
+groceryData=unique(groceryData)
+                   
+```
+```{r}
+library(ggplot2)
+glob_mob_small=glob_mob[1:nrow(glob_mob)/4,]
+```
+
+
+```{r}
+library(MASS)
+
+
+
+
+plot1 <- {glob_mob %>% ggplot(aes(x=date,     
+                                            y=grocery_and_pharmacy_percent_change_from_baseline,color=region))}+geom_smooth()+scale_colour_discrete(labels = c('Europe', 'South America',"North America"))+xlab("Date")+ylab("Visits to groceries and pharmacies")+geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2)+annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of Lockdown")
+
+print(plot1)
+```
+
+
+```{r}
+plot1 <- {glob_mob %>% ggplot(aes(x=date,     
+                                            y=retail_and_recreation_percent_change_from_baseline,color=region))}+geom_smooth()+scale_colour_discrete(labels = c('Europe', 'South America',"North America"))+xlab("Date")+ylab("Visits to groceries and pharmacies")+geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2)+annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of Lockdown")
+
+print(plot1)
+```
+
+
+
+We plot the average percentage change in the frequency of visits to grocery shops and pharmacies against retail and recreation for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America. We fit a linear model as well as the best line of fit and see that a linear relationship between the variables fits fairly well.
+
+
+```{r  message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
+library(ggplot2)
+
+ret_gro <- {groceryData%>% ggplot(aes(x = mean_retail,
+                                            y = mean_grocery_pharmacy))} +
+  xlab("Retail activity (% change from baseline)") +
+  ylab("Activity Grocery and phramacies (% change from baseline)") +
+  ggtitle("Retail and grocery-pharmacy has positive relationship",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  geom_smooth(method = loess, linetype = "dashed") +
+  stat_smooth(method = "lm")
+print(ret_gro)
+```
+
+
+```{r}
+library(ggplot2)
+lm.homework <- lm(mean_grocery_pharmacy ~ mean_retail, data = groceryData)
+
+
+gro_ret_reg <- {groceryData %>% ggplot(aes(x = mean_retail,
+                                            y = mean_grocery_pharmacy,
+                                            color=region))} +
+  xlab("Retail activity (% change from baseline)") +
+  ylab("Activity Grocery and phramacies (% change from baseline)") +
+  ggtitle("Retail and grocery-pharmacy has positive relationship across Europe, North America and South America",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  geom_smooth(method = loess, linetype = "dashed") +
+  stat_smooth(method = "lm") +
+  geom_abline(intercept = signif(lm.homework$coef[[1]],5),
+              slope = signif(lm.homework$coef[[2]],5), color="black", size=1) +
+  labs(caption = paste("Linear model for all countries: ",
+                       "Intercept =",signif(lm.homework$coef[[1]],5),
+                       " Slope =",signif(lm.homework$coef[[2]],5)))
+
+print(gro_ret_reg)
+```
+
+
+
+
+```{r}
+EUR <- {groceryData %>%
+    filter(region == "Europe")}
+N.USA <- {groceryData %>%
+    filter(region == "North America")}
+S.USA <- {groceryData %>%
+    filter(region == "South America")}
+EUR1 <- {EUR %>%
+    filter(country %in% c("France","Germany","Italy","Russia","Turkey","United Kingdom"))}
+N.USA1 <- {N.USA %>%
+    filter(country %in% c("Canada","Cuba","Guatemala","Haiti","Mexico","United States"))}
+S.USA1 <- {S.USA %>%
+    filter(country %in% c("Argentina","Brazil","Chile","Colombia","Peru","Venezuela"))}
+```
+
+
+
+```{r}
+lm.EURhomework <- lm(mean_grocery_pharmacy ~ mean_retail, data = EUR)
+EUR_home_work <- {EUR1 %>% ggplot(aes(x = mean_retail,
+                                            y = mean_grocery_pharmacy,
+                                            color=country))} +
+  xlab("Retail activity (% change from baseline)") +
+  ylab("Activity Grocery and phramacies (% change from baseline)") +
+  ggtitle("Retail and grocery-pharmacy has positive relationship across Europe",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  stat_smooth(method = "lm", color="grey", linetype="dashed") +
+  geom_abline(intercept = signif(lm.EURhomework$coef[[1]],5),
+              slope = signif(lm.EURhomework$coef[[2]],5), color="black") +
+  labs(caption = paste("Linear model for all countries in Europe: ",
+                       "Intercept =",signif(lm.EURhomework$coef[[1]],5),
+                       " Slope =",signif(lm.EURhomework$coef[[2]],5)))
+library(ggpubr)
+ggarrange(EUR_home_work, legend="right")
+```
+
+
+
+```{r}
+lm.NUSAhomework <- lm(mean_grocery_pharmacy ~ mean_retail, data = N.USA)
+NUSA_home_work <- {N.USA1 %>% ggplot(aes(x = mean_retail,
+                                            y = mean_grocery_pharmacy,
+                                            color=country))} +
+  xlab("Retail activity (% change from baseline)") +
+  ylab("Activity Grocery and phramacies (% change from baseline)") +
+  ggtitle("Retail and grocery-pharmacy has positive relationship across North America",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  stat_smooth(method = "lm", color="grey", linetype="dashed") +
+  geom_abline(intercept = signif(lm.NUSAhomework$coef[[1]],5),
+              slope = signif(lm.NUSAhomework$coef[[2]],5), color="black") +
+  labs(caption = paste("Linear model for all countries in NA: ",
+                       "Intercept =",signif(lm.NUSAhomework$coef[[1]],5),
+                       " Slope =",signif(lm.NUSAhomework$coef[[2]],5)))
+ggarrange(NUSA_home_work, legend="right")
+```
+
+```{r}
+lm.SUSAhomework <- lm(mean_grocery_pharmacy ~ mean_retail, data = S.USA)
+SUSA_home_work <- {S.USA1 %>% ggplot(aes(x = mean_retail,
+                                            y = mean_grocery_pharmacy,
+                                            color=country))} +
+  xlab("Retail activity (% change from baseline)") +
+  ylab("Activity Grocery and phramacies (% change from baseline)") +
+  ggtitle("Retail and grocery-pharmacy has positive relationship across South America",
+           subtitle = "Drawn from Google Community Mobility Reports") +
+  geom_point() +
+  stat_smooth(method = "lm", color="grey", linetype="dashed") +
+  geom_abline(intercept = signif(lm.SUSAhomework$coef[[1]],5),
+              slope = signif(lm.SUSAhomework$coef[[2]],5), color="black") +
+  labs(caption = paste("Linear model for all countries in SA: ",
+                       "Intercept =",signif(lm.SUSAhomework$coef[[1]],5),
+                       " Slope =",signif(lm.SUSAhomework$coef[[2]],5)))
+ggarrange(SUSA_home_work, legend="right")
+```
+
+
+
+
+

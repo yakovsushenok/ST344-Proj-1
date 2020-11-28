@@ -4,27 +4,29 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(dplyr)
+library(readxl)
+library(lubridate)
+library(stringr)
+library(ggplot2)
 ```
 # Introduction
 
 In this report, we will be exploring the effects of lockdown and other government restrictions and how they affect OmniCorp. OmniCorp is a large multi-national commercial company with stakes in the retail and hospitality sectors. Their operations are primarily in Europe, and North, Central and South America. We have been tasked with building an in house expertise on the ongoing COVID-19 virus outbreak. This report is our findings and recommendation for the company. 
 
 # Analysis
-
+## Confirmed cases
 The first immediate effect of lockdown is with the number of confirmed cases of the COVID-19 virus. At the start of the pandemic, the infection rate of the virus was relatively high and thus the number of confirmed cases was rising at an exponential rate. Governments around the world started imposing lockdown and restrictions in attempts to slow down the rate of infection and consequently the number of confirmed cases within populations. However, these restrictions brought with them huge changes to society in a very short time. These changes have both direct and indirect consequences to OmniCorp.
 
 The main reason for lockdown is to reduce the spread of the virus. However, the types of restrictions, effectiveness of lockdown and adherence and enforcement of rules has varied significantly between countries. The effect of lockdown on confirmed cases is important for OmniCorp in order to be able to plan for potential future restrictions. The following graph shows the number of daily confirmed cases for the United Kingdom, United States and Mexico. Note that the curves for each country differs. We will use the tidycovid19 [dataset](https://moodle.warwick.ac.uk/mod/resource/view.php?id=1023429), downloaded from the tidycovid19 R package on 24th September 2020. Descriptions of the different variables found in the data relating to the current epidemic and further details of the package can be found at this [website](https://joachim-gassen.github.io/tidycovid19/) (Gassen 2020).
 
-```{r chunk1}
-library(dplyr)
-library(readxl)
+```{r CovidData}
 CovidData <- read.csv("tidycovid19.csv")
 
-library(lubridate)
 CovidData <- CovidData %>%
   mutate(date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd"))))
-
-library(stringr)
+```
+```{r CaseData}
 CaseData <- {CovidData %>% 
     filter((str_detect(region, "America") | str_detect(region, "Europe"))) %>%
     select(country, date, confirmed) }
@@ -57,7 +59,7 @@ MexicoCaseData <- CaseData %>%
   filter(country == "Mexico")
 MexicoCaseData$daily_confirmed <- scale(MexicoCaseData$daily_confirmed, center = FALSE)
 
-library(ggplot2)
+
 plot_confirmed_date <- {UKCaseData %>% ggplot(aes(x = date, y = daily_confirmed))} +
   geom_point(color = "blue") +
   geom_point(data = USCaseData, color = "red") +
@@ -74,25 +76,15 @@ As we can see from the graph above, the three countries number of confirmed case
 
 The number of confirmed cases has many effects on OmniCorp, directly and indirectly. One of the direct effects is that the staff, supply chain and customer base are all impacted by the virus and may be changed. An indirect change is the implementation of lock and restrictions which in turn, may change consumer habits and behaviors. A key aspect of lockdown is restricting the movement of people. We will investigate the change in these movement habits. 
 
+## Activity in residential places and workplaces
 We look at how the frequency of people visiting residential places and workplaces has changed during the pandemic for countries in Europe and the Americas. In particular, we study the `gcmr_residential` and `gcmr_workplaces` variables from a community mobility report (Google, 2020). The variables are expressed as a percentage*100 change relative to the baseline period Jan 3 - Feb 6, 2020. However, we take the data from Feb 7, as we want to look at the average percentage change in the frequency of people's visits to these places, and don't want to include the baseline in this mean. We find the mean of these variables and name them `mean_gcmr_residential` and `mean_gcmr_workplaces` respectively.
 
 We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America. We fit a linear model as well as the best line of fit and see that a linear relationship between the variables fits fairly well.
 
-```{r read}
-library(tidyr)
-
-CovidData <- read.csv("tidycovid19.csv")
-
-library(lubridate)
-CovidData <- CovidData %>%
-  mutate(date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd"))))
-```
-
-```{r EURUSAdata, message=FALSE, echo=FALSE, warning=FALSE}
-library(stringr)
+```{r EURUSAdata}
 EURUSA <- {CovidData %>% 
     filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) ) %>%
-    select(country, date, gcmr_workplaces, gcmr_residential, income, region)}
+    select(country, date, gcmr_workplaces, gcmr_residential, region)}
 
 europe_list=c("Albania","Andorra","Armenia","Austria","Azerbaijan","Belarus","Belgium","Bosnia & Herzegovina","Bulgaria","Croatia","Cyprus","Czechia","Denmark","Estonia","Finland","France","Georgia","Germany","Greece","Hungary","Iceland","Ireland","Italy","Kazakhstan","Kosovo","Latvia","Liechtenstein","Lithuania","Luxembourg","Malta","Moldova","Monaco","Montenegro","Netherlands","Macedonia","Norway","Poland","Portugal","Romania","Russia","San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland","Turkey","Ukraine","United Kingdom","Faroe Islands","Gibraltar","Isle of Man","North Macedonia")
 
@@ -135,8 +127,9 @@ S.USA1 <- {S.USA %>%
     filter(country %in% c("Argentina","Brazil","Chile","Colombia","Peru","Venezuela"))}
 
 ```
-```{r workVhome, message=FALSE, echo=FALSE, warning=FALSE, fig.align='left'}
-library(ggplot2)
+```{r workVhome, fig.align='left'}
+lm.homework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = EURUSA1)
+
 EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces))} +
   xlab("Activity in residential (% change from baseline)") +
@@ -146,15 +139,14 @@ EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
   geom_smooth(method = loess, linetype = "dashed") +
-  stat_smooth(method = "lm")
+  geom_abline(intercept = signif(lm.homework$coef[[1]],5),
+              slope = signif(lm.homework$coef[[2]],5), color="blue", size=1)
 print(EURUSA_home_work)
 
 ```
 We now separate the plot into the different regions to see if the relationships of the variables differ between the regions. We also fit a linear model between `mean_gcmr_workplaces` and `mean_gcmr_residential` for all countries in Europe and America and plot this linear relationship on the graph, as well as the individual linear trends for each region.
 
-```{r workVhomereg, message=FALSE, echo=FALSE, warning=FALSE}
-lm.homework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = EURUSA1)
-
+```{r workVhomereg}
 EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,
                                             color=region))} +
@@ -181,22 +173,18 @@ We also note that there was a greater overall average activity in residential pl
 
 We look closer at the relationship of activity in residential places against activity in workplaces for Europe, North America and South America individually, to identify any outliers in the trend and identify why these might occur. We select the same 6 countries as in our first section and plot these along with the linear trend for all countries in the region. We also plot a dashed linear trend which shows how the linear model changes when it is fit with just the six countries selected.
 
-Using [Google Trends](https://trends.google.com/trends/) data on the search volume for various terms, we can investigate the general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of these regions.
+## Activity in residential places and interest in 'Take out'
+Using [Google Trends](https://trends.google.com/trends/) data (Google Trends, 2020) on the search volume for various terms, we can investigate the general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of these regions.
 
-```{r step 2 task2, message=FALSE, warning=FALSE, include=FALSE}
-library(stringr)
+```{r EuropeAmericadailyconfirmed}
 EuropeAmericaDataPostFeb6 <- {CovidData %>% 
     filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) & (date > as.Date("2020-02-06")) )}
-```
-
-```{r daily confirmed, include=FALSE}
 # Add a column so we can see the daily confirmed cases of covid19
 EuropeAmericaDataPostFeb6 <- EuropeAmericaDataPostFeb6 %>% 
   mutate(daily_confirmed = firstdiff(confirmed))
 ```
 
-```{r US Data, echo=FALSE, message=FALSE, warning=FALSE}
-library(ggplot2)
+```{r US Data}
 USResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% c("United States"))
 
 USResPlot <- ggplot(USResidentialData, aes(x = date, y = gcmr_residential)) + geom_smooth(size = 0.5)
@@ -220,7 +208,7 @@ USTakeoutResData <- USTakeoutResData %>% mutate(. = (USTakeoutSearch %>% filter(
 
 ```
 
-```{r USTakeoutResPlot, echo=FALSE, message=FALSE, warning=FALSE}
+```{r USTakeoutResPlot}
 USTakeoutResPlot <- ggplot(USTakeoutResData, aes(x = gcmr_residential, y = Take.out...United.States.)) + geom_point(size = 0.5) + geom_smooth(method = 'lm', formula = y~x)+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the US") + ylim(c(0,100))
 
 # ylabel Interest over time: Numbers represent search interest relative to the highest point on the chart for the given region and time. A value of 100 is the peak popularity for the term. A value of 50 means that the term is half as popular. A score of 0 means there was not enough data for this term.
@@ -230,8 +218,7 @@ USTakeoutResPlot <- ggplot(USTakeoutResData, aes(x = gcmr_residential, y = Take.
 #summary(lm(data = USTakeoutResData, Take.out...United.States. ~ gcmr_residential))
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(ggplot2)
+```{r UK Data}
 UKResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% c("United Kingdom"))
 
 UKResPlot <- ggplot(UKResidentialData, aes(x = date, y = gcmr_residential)) + geom_smooth(size = 0.5)
@@ -254,7 +241,7 @@ UKTakeoutResData <- UKTakeoutResData %>% mutate(. = (UKTakeoutSearch %>% filter(
 
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r UKTakeoutResPlot}
 UKTakeoutResPlot <- ggplot(UKTakeoutResData, aes(x = gcmr_residential, y = Take.out...United.Kingdom.)) + geom_point(size = 0.5) + geom_smooth(method = 'lm', formula = y~x)+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the UK") + ylim(c(0,100)) + geom_smooth()
 
 
@@ -264,7 +251,7 @@ UKTakeoutResPlot <- ggplot(UKTakeoutResData, aes(x = gcmr_residential, y = Take.
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r Mexico Data}
 MexicoResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% c("Mexico"))
 
 MexicoResPlot <- ggplot(MexicoResidentialData, aes(x = date, y = gcmr_residential)) + geom_smooth(size = 0.5)
@@ -285,7 +272,7 @@ MexicoTakeoutResData <- MexicoTakeoutResData %>% mutate(. = (MexicoTakeoutSearch
 
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r MexicoTakeoutResPlot}
 MexicoTakeoutResPlot <- ggplot(MexicoTakeoutResData, aes(x = gcmr_residential, y = Take.out...Mexico.)) + geom_point(size = 0.5) + geom_smooth(method = 'lm', formula = y~x)+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in Mexico") + ylim(c(0,100)) 
 
 
@@ -296,7 +283,7 @@ MexicoTakeoutResPlot <- ggplot(MexicoTakeoutResData, aes(x = gcmr_residential, y
 
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r , echo=FALSE, message=FALSE, warning=FALSE}
 colnames(USTakeoutResData)[1] = "Take.Out.Interest"
 USTakeoutResData <- USTakeoutResData %>% mutate(country = "United States")
 
@@ -326,9 +313,6 @@ Due to the increased activity in residences, we have noticed a positive relation
 To capture the loss of business in the hospitality sector (mainly restaurants), We recommend OmniCorp to expand into delivery of food from their current restaurants. This will hopefully recover the business that is lost due to COVID-19 whilst keeping the spread of COVID-19 to a minimum as customers will be eating at home. This is further supported by the following graph, showing the interest of the search terms `restaurants` and `take-out`. We will plot a graph of the average interest for these terms throughout European, North, Central and South American countries. The y axis represents search interest relative to the highest point on the chart for the given region and time. A value of 100 is the peak popularity for the term. A value of 50 means that the term is half as popular.
 
 ```{r chunkX}
-library(dplyr)
-library(readxl)
-library(lubridate)
 RestaurantTrendData <- read.csv("gt_restaurants.csv")
 TakeOutTrendData <- read.csv("gt_take_out.csv")
 
@@ -337,8 +321,7 @@ RestaurantTrendData <- RestaurantTrendData %>%
 TakeOutTrendData <- TakeOutTrendData %>%
   mutate(date = as.Date(parse_date_time(TakeOutTrendData$Week,c("d/m/y"))))
 
-library(ggplot2)
-plot_restuarants_trends <- ggplot(RestaurantTrendData, aes(x = date, y = interest)) +
+plot_restaurants_trends <- ggplot(RestaurantTrendData, aes(x = date, y = interest)) +
   geom_line(aes(color='red')) +
   geom_line(data=TakeOutTrendData, aes(color='blue', labels='restaurants')) +
   xlab("Date") +
@@ -349,8 +332,7 @@ plot_restuarants_trends <- ggplot(RestaurantTrendData, aes(x = date, y = interes
   scale_color_manual(labels = c("take-out", "restaurants"), values = c("blue", "red")) +
   guides(color=guide_legend("Search Term"))
 
-
-print(plot_restuarants_trends)
+print(plot_restaurants_trends)
 ```
 
 The plot above shows that the two search terms' interest have an inverse relationship. As we can see, when lockdown and restrictions began to be imposed by governments, consumer interest in `restaurants` decreased whereas interest in `take-out` increased at a similar magnitude. This shows that in lockdowns, consumers are looking to buy more food online, possibly due to sit-in restaurants being closed or people scared to go out in public. This indicates that we, OmniCorp, should focus on online retail and hospitality when lockdown measures are introduced. It is also important to note that the interest in `restaurants` increased back to normal levels almost as fast as it fell. However, it had a smaller, more steady decrease as a second wave of restrictions took place whereas `takeout` did not have a similar magnitude of increase.
@@ -360,3 +342,12 @@ The plot above shows that the two search terms' interest have an inverse relatio
 It is clear that the lockdown and restrictions in response to the COVID-19 have had effects on the retail and hospitality sectors, as well as society as a whole...
 
 - Acceleration of change to online?
+
+
+# References
+
+Gassen, 2020, *Download, Tidy and Visualize Covid-19 Related Data*. [online] Available at: <https://joachim-gassen.github.io/tidycovid19/>
+
+Google, 2020. *COVID-19 Community Mobility Report*. [online] Available at: <https://www.google.com/covid19/mobility/>
+
+Google Trends, 2020 *Google Trends*. [online] Available at: <https://trends.google.com/trends/>

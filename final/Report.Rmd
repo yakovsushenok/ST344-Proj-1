@@ -283,7 +283,7 @@ MexicoTakeoutResPlot <- ggplot(MexicoTakeoutResData, aes(x = gcmr_residential, y
 
 
 
-```{r , echo=FALSE, message=FALSE, warning=FALSE}
+```{r TakeoutResPlot}
 colnames(USTakeoutResData)[1] = "Take.Out.Interest"
 USTakeoutResData <- USTakeoutResData %>% mutate(country = "United States")
 

@@ -195,7 +195,7 @@ psychological needs or self-fulfillment needs. Hence, we first start by investig
 Below you can see a graph depicting the average percentage change in the frequency of people's visits to grocery stores and pharmacies, relative to a baseline period Jan3- Feb 6, 2020 of the three regions Omnicorp is operating in.
 
 
-```{r eval=FALSE, include=FALSE}
+```{r  include=FALSE}
 glob_mob1=read.csv("https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv")
 ```
 ```{r include=FALSE}

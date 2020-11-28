@@ -67,7 +67,8 @@ plot_confirmed_date <- {UKCaseData %>% ggplot(aes(x = date, y = daily_confirmed)
   ggtitle("Daily confirmed cases is different across time for UK, US and Mexico.",
           subtitle="Each point represents a single day.") +
   scale_x_date(date_breaks = "months", date_labels = "%b-%y") + 
-  scale_color_manual(labels = c("United Kingdom", "United States", "Mexico"), values = c("blue", "red", "green")) +
+  scale_color_manual(labels = c("United Kingdom", "United States", "Mexico"), 
+                     values = c("red", "green", "blue")) +
   guides(color=guide_legend("Countries"))
 
 print(plot_confirmed_date)
@@ -222,7 +223,16 @@ groceryData=unique(groceryData)
 
 ```{r plot1}
 plot1 <- {glob_mob %>% ggplot(aes(x=date,     
-                                            y=grocery_and_pharmacy_percent_change_from_baseline,color=region))}+geom_smooth()+scale_colour_discrete(labels = c('Europe', 'South America',"North America"))+xlab("Date")+ylab("Visits to groceries and pharmacies")+geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2)+annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of lockdown")+geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2)+annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown")
+                                  y=grocery_and_pharmacy_percent_change_from_baseline,
+                                  color=region))} +
+  geom_smooth() +
+  scale_colour_discrete(labels = c('Europe', 'South America',"North America")) +
+  xlab("Date") +
+  ylab("Visits to groceries and pharmacies") +
+  geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2) +
+  annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of lockdown") +
+  geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2) +
+  annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown")
 
 print(plot1)
 ```

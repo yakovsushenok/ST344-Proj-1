@@ -123,6 +123,8 @@ We see from this plot that the general trend is as the time spent in workplaces 
 
 We also note that there was a greater overall average activity in residential places in South America than in Europe. However, this could be explained by the time period. We are looking at data from Feb 7 - Sept 20, and in this time period South America is predominantly in Autumn and Winter, in which people tend to stay at home more than in Spring and Summer, so there is potential for misleading data here.
 
+We look closer at the outliers in the trends for North & South America and identify that these are Nicaragua & Paraguay respectively.
+
 
 We look closer at the relationship of activity in residential places against activity in workplaces for Europe, North America and South America individually, to identify any outliers in the trend and identify why these might occur. We select the same 6 countries as in our first section and plot these along with the linear trend for all countries in the region. We also plot a dashed linear trend which shows how the linear model changes when it is fit with just the six countries selected.
 

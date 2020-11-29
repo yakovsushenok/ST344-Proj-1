@@ -176,7 +176,7 @@ We can see from this plot that the general trend is as the time spent in workpla
 
 We also note that there was a greater overall average activity in residential places in South America than in Europe. However, this could be explained by the time period. We are looking at data from Feb 7 - Sept 20, and in this time period South America is predominantly in Autumn and Winter, in which people tend to stay at home more than in Spring and Summer, so there is potential for misleading data. Given more time and data, it would be interesting to explore the structure of the economies for each of the countries as this could give more indication to why the trends appear to be different for each continent.
 
-We look closer at the outliers in the trends for North & South America and identify that these are Nicaragua & Paraguay respectively. A possible explanation for these countries could be due to their very low rates of infection and number of confirmed cases. This may have had an effect on the level and type of lockdown that was imposed in these countries. This could indicate to OmniCorp that these countries could transition back to normal operations quicker than other countries post lockdown.
+We look closer at the outliers in the trends for North & South America and identify that these are Nicaragua & Paraguay, respectively. A possible explanation for these countries could be due to their very low rates of infection and number of confirmed cases. This may have had an effect on the level and type of lockdown that was imposed in these countries. This could indicate to OmniCorp that these countries could transition back to normal operations quicker than other countries post lockdown.
 
 
 ## Activity in grocery and retail
@@ -424,7 +424,7 @@ The plot above shows that the two search terms' interests have an inverse relati
 
 # Conclusion
 
-It is clear that the lockdown and government interventions in response to the COVID-19 outbreak have had effects on the retail and hospitality sectors, as well as society as a whole. Consumer habits and attitudes have been change in a small period of time. Lockdowns generally helped slow the rate of infection within populations and reduce the impact to communities. However it brought within drastic changes. As shown, people have turned to using the internet to attempt to replace the missing gap on goods and services created by restrictions. This indicates a shift towards ecommence and online activities. It is hard to tell if this was an already on-going process in which the COVID-19 outbreak, and subsequent government interventions, help accelerate. Either way, it is very important for OmniCorp to be aware of this change.
+It is clear that the lockdown and government interventions in response to the COVID-19 outbreak have had effects on the retail and hospitality sectors, as well as society as a whole. Consumer habits and attitudes have been change in a small period of time. Lockdowns generally helped slow the rate of infection within populations and reduce the impact to communities. However it brought within drastic changes. As shown, people have turned to using the internet to attempt to replace the missing gap on goods and services created by restrictions. This indicates a shift towards ecommerce and online activities. It is hard to tell if this was an already on-going process in which the COVID-19 outbreak, and subsequent government interventions, help accelerate. Either way, it is very important for OmniCorp to be aware of this change.
 
 # References
 

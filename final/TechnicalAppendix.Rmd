@@ -456,34 +456,32 @@ print(UKTakeoutResPlot)
 ```
 
 
-```{r Mexico Data, echo=TRUE}
-MexicoResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% c("Mexico"))
+```{r Brazil Data, echo=TRUE}
+BrazilResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% c("Brazil"))
 
-MexicoResPlot <- ggplot(MexicoResidentialData, aes(x = date, y = gcmr_residential)) + geom_smooth(size = 0.5) + xlab("Date") + ylab("Activity in places of residence") + ggtitle("Activity in places of residence against the date in the Mexico")
-print(MexicoResPlot)
+BrazilResPlot <- ggplot(BrazilResidentialData, aes(x = date, y = gcmr_residential)) + geom_smooth(size = 0.5)
+print(BrazilResPlot)
 
-#Data obtained from google trends, searched terms "take-out (cuisine)" for Mexico in the past 12 months
-MexicoTakeoutSearch <- read.csv("MexicoTakeoutSearchGtrends.csv")
-MexicoTakeoutSearch <- MexicoTakeoutSearch %>% mutate(date = as.Date(parse_date_time(MexicoTakeoutSearch$Week,c("d/m/y"))))
+#Data obtained from google trends, searched terms "take-out (cuisine)" for Brazil in the past 12 months
+BrazilTakeoutSearch <- read.csv("BrazilTakeoutSearchGtrends.csv")
+BrazilTakeoutSearch <- BrazilTakeoutSearch %>% mutate(date = as.Date(parse_date_time(BrazilTakeoutSearch$Week,c("d/m/y"))))
 
-MexicoTakeoutPlot <- ggplot(MexicoTakeoutSearch, aes(x = date, y = Take.out...Mexico.)) + geom_smooth(size = 0.5) + xlab("Date") + ylab("Interest in 'Take-out' searches") + ggtitle("Interest in 'Take-out' against the date in the Mexico")
+BrazilTakeoutPlot <- ggplot(BrazilTakeoutSearch, aes(x = date, y = Take.out...Brazil.)) + geom_smooth(size = 0.5)
 
-print(MexicoTakeoutPlot)
+print(BrazilTakeoutPlot)
 
-MexicoTakeoutResData <- MexicoTakeoutSearch
-MexicoTakeoutResData <- MexicoResidentialData %>% filter(date %in% MexicoTakeoutSearch$date) %>% select(date, gcmr_residential)
+BrazilTakeoutResData <- BrazilTakeoutSearch
+BrazilTakeoutResData <- BrazilResidentialData %>% filter(date %in% BrazilTakeoutSearch$date) %>% select(date, gcmr_residential)
 
-MexicoTakeoutResData <- MexicoTakeoutResData %>% mutate(. = (MexicoTakeoutSearch %>% filter(date %in% MexicoTakeoutResData$date) %>% select(Take.out...Mexico.)))
+BrazilTakeoutResData <- BrazilTakeoutResData %>% mutate(. = (BrazilTakeoutSearch %>% filter(date %in% BrazilTakeoutResData$date) %>% select(Take.out...Brazil.)))
 
 ```
 
-```{r MexicoTakeoutResPlot, echo=TRUE}
-MexicoTakeoutResPlot <- ggplot(MexicoTakeoutResData, aes(x = gcmr_residential, y = Take.out...Mexico.)) + geom_point(size = 0.5) + geom_smooth()+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in Mexico") + ylim(c(0,100)) 
+```{r BrazilTakeoutResPlot, echo=TRUE}
+BrazilTakeoutResPlot <- ggplot(BrazilTakeoutResData, aes(x = gcmr_residential, y = Take.out...Brazil.)) + geom_point(size = 0.5) + geom_smooth(method = 'lm', formula = y~x)+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in Brazil") + ylim(c(0,100)) + geom_smooth()
 
 
-print(MexicoTakeoutResPlot)
-
-#summary(lm(data = MexicoTakeoutResData, Take.out...Mexico. ~ gcmr_residential))
+print(BrazilTakeoutResPlot)
 ```
 
 
@@ -495,20 +493,20 @@ USTakeoutResData <- USTakeoutResData %>% mutate(country = "United States")
 colnames(UKTakeoutResData)[1] = "Take.Out.Interest"
 UKTakeoutResData <- UKTakeoutResData %>% mutate(country = "United Kingdom")
 
-colnames(MexicoTakeoutResData)[1] = "Take.Out.Interest"
-MexicoTakeoutResData <- MexicoTakeoutResData %>% mutate(country = "Mexico")
+colnames(BrazilTakeoutResData)[1] = "Take.Out.Interest"
+BrazilTakeoutResData <- BrazilTakeoutResData %>% mutate(country = "Brazil")
 
-USUKMexTakeoutResData <- rbind(USTakeoutResData, UKTakeoutResData, MexicoTakeoutResData)
+USUKBrazTakeoutResData <- rbind(USTakeoutResData, UKTakeoutResData, BrazilTakeoutResData)
 
-USUKMexTakeoutResPlot <- ggplot(data = USUKMexTakeoutResData, aes(x = gcmr_residential, y = Take.Out.Interest, group = country, col = country, fill = country)) + geom_point() + geom_smooth(size = 1) + ylim(0,100) + ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the US, UK and Mexico")
+USUKBrazTakeoutResPlot <- ggplot(data = USUKBrazTakeoutResData, aes(x = gcmr_residential, y = Take.Out.Interest, group = country, col = country, fill = country)) + geom_point() + geom_smooth(size = 1) + ylim(0,100) + ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the US, UK and Brazil")
 
-print(USUKMexTakeoutResPlot)
+print(USUKBrazTakeoutResPlot)
 ```
 The United Kingdom implemented at least 1 lockdown measure in late March when the daily confirmed cases of COVID-19 was on the rise. Due to this, we have seen an increase in the activity in places of residence before hitting its peak in late April. We can see due to COVID-19 the interest in 'Take out' remained consistent throughout the lifetime of the pandemic. This could indicate further interest in purchasing food to eat at home. OmniCorp should facilitate this demand for "Take out" by offering food delivery services for their restaurant outlets in the United Kingdom.
 
-Similar to the UK, the government of Mexico implemented 2 lockdown measures in late March. This suppressed spread of the COVID-19 virus until July when the daily confirmed cases was back on the rise. As the number of confirmed cases increased the activity in places of residence followed. We can also observe an increase in the interest for "Take out".
+Similar to the UK, the government of Brazil implemented at least 1 lockdown measure in late March. This suppressed spread of COVID-19 until July when the daily confirmed cases was on the rise. As the number of confirmed cases increased the activity in places of residence followed. We can also observe an increase in the interest for "Take out".
 
-Despite the U.S. government having 0 lockdown measures in place we have seen an increase of activity in the places of residence. At the first peak of the daily confirmed cases of COVID-19 (refer to the graph of the Daily Confirmed Cases of COVID-19 as a % of the total population) around April we can see that the citizens in the U.S. were cautious and the activity within residences peaked (refer to the gcmr_residence against date plot). Due to the increased activity in residences, we have noticed a positive relationship between the activity in residences and the interest in 'Take out' searches in Google trends.
+Despite the U.S. government having 0 lockdown measures in place we have seen an increase of activity in the places of residence. When the daily confirmed cases of COVID-19 in the US was at its peak, we can observe that the activity within places of residence was at a peak as well. This indicates that regardless of the lockdown measures, the people in the US were cautious and mindful of the pandemic. Due to the increased activity in residences, we have noticed a positive relationship between the activity in residences and the interest in 'Take out' searches in Google trends.
 
 To capture the loss of business in the hospitality sector, mainly restaurants, We recommend OmniCorp to expand into delivery of food from their current hospitality businesses. This will hopefully recover the business that is lost due to COVID-19 whilst keeping the spread of COVID-19 to a minimum as customers will be eating at home. This is further supported by the following graph, showing the interest of the search terms `restaurants` and `take-out`. We will plot a graph of the average interest for these terms throughout European, North, Central and South American countries. The y axis represents search interest relative to the highest point on the chart for the given region and time. A value of 100 is the peak popularity for the term. A value of 50 means that the term is half as popular.
 

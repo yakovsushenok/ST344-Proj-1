@@ -69,7 +69,7 @@ BrazilCaseData$daily_confirmed <- scale(BrazilCaseData$daily_confirmed, center =
 UKUSBrazilData <- rbind(UKCaseData,USCaseData,BrazilCaseData)
 
 
-plot_confirmed_date <- {UKCaseData %>% ggplot(aes(x = date, y = daily_confirmed, color=country))} +
+plot_confirmed_date <- {UKUSBrazilData %>% ggplot(aes(x = date, y = daily_confirmed, color=country))} +
   geom_point() +
   xlab("Date") +
   ylab("Daily Cases (% of maximum value in period)") +

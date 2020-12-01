@@ -228,7 +228,7 @@ plot1 <- {glob_mob %>% ggplot(aes(x=date,
                                   y=grocery_and_pharmacy_percent_change_from_baseline,
                                   color=region))} +
   geom_smooth() +
-  scale_colour_discrete(labels = c('Europe', 'South America',"North America")) +
+  scale_colour_discrete(labels = c('Europe',"North America",'South America')) +
   xlab("Date") +
   ylab("Visits to groceries and pharmacies (% change from baseline)") +
   geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2) +
@@ -244,11 +244,11 @@ As was expected, after the enforcement of lockdown measures, visits to grocery s
 
 From mid October to mid November, [countries in Europe started introducing second wave of lockdowns.](https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns#Table_of_pandemic_lockdowns). This lead to a decrease in the number of confirmed cases in Europe. In South America however, we see a gradual decrease since mid July. There have been no lockdowns in these countries since the first initial lockdowns. After nearly 8 months of consumer activity having a negative change relative to the baseline, North America recovers in October, and sees a constant increase. To summarize, we can conclude that people during the pandemic have reduced their visits to grocery and pharmacy shops.
 
-We now go on to explore retail and recreation activity during the pandemic. Below you will see the average percentage change in the frequency of people's visits to grocery stores and pharmacies, relative to a baseline period from Jan 3 to Feb 6, 2020, starting from the 15th of February.
+We now go on to explore retail and recreation activity during the pandemic. Below you will see the average percentage change in the frequency of people's visits to retail and recreation, relative to a baseline period from Jan 3 to Feb 6, 2020, starting from the 15th of February.
 
 ```{r plot2}
 plot1 <- {glob_mob %>% ggplot(aes(x=date,     
-                                            y=retail_and_recreation_percent_change_from_baseline,color=region))}+geom_smooth()+scale_colour_discrete(labels = c('Europe', 'South America',"North America"))+xlab("Date")+ylab("Retail and recreation activity")+geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2)+annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of Lockdown")+geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2)+annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown")
+                                            y=retail_and_recreation_percent_change_from_baseline,color=region))}+geom_smooth()+scale_colour_discrete(labels = c('Europe',"North America",'South America'))+xlab("Date")+ylab("Retail and recreation activity")+geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2)+annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of Lockdown")+geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2)+annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown")
 
 print(plot1)
 ```

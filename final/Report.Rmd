@@ -12,17 +12,18 @@ library(ggplot2)
 ```
 # Introduction
 
-In this report, we will be exploring the effects of lockdown and other government interventions on OmniCorp. Since our operations are primarily in Europe, and North, Central and South America, mainly concerning our stakes in the retail and hospitality sectors, we will be only looking at a subset of countries. We have been tasked with building an in house expertise on the ongoing COVID-19 virus outbreak. This report is our findings and recommendations to the company. 
+In this report, we will be exploring the effects of lockdown and other government interventions on OmniCorp during the ongoing COVID-19 virus outbreak. Since our operations are primarily in Europe, and North, Central and South America, with stakes mainly in the retail and hospitality sectors, this is where we will be placing our focus. We present our findings and recommendations in the following. 
 
-The summary of our findings are as follows:
+A summary of our findings is as follows:
 
- * Number of confirmed cases impacts the severity of lockdown and government interventions imposed.
+ * The number of confirmed cases impacts the severity of lockdown and government interventions imposed.
+ * As lockdown measures are enforced and people stay at home more, people travel into work less. This then effects the number of visits to physical stores. 
  * ...
 
 # Analysis
 ## Confirmed cases
 
-The first immediate effect of lockdown is with the number of confirmed cases of the COVID-19 virus. At the start of the pandemic, the infection rate of the virus was relatively high and thus the number of confirmed cases was rising at an exponential rate. Governments around the world started imposing lockdown and restrictions in attempts to slow down the rate of infection and consequently the number of confirmed cases within populations. However, these restrictions brought with them huge changes to society in a very short period of time. These changes have both direct and indirect consequences to OmniCorp.
+The first immediate effect of lockdown is with the number of confirmed cases of the COVID-19 virus. At the start of the pandemic, the infection rate of the virus was relatively high and thus the number of confirmed cases was rising at an exponential rate. Governments around the world started imposing lockdown measures and restrictions in attempt to slow down the rate of infection and consequently the number of confirmed cases within populations. However, these restrictions brought with them huge changes to society in a very short period of time. These changes have both direct and indirect consequences to OmniCorp.
 
 The main reason for lockdown is to reduce the spread of the virus. However, the types of restrictions, effectiveness of lockdown and adherence and enforcement of rules has varied significantly between countries. The effect of lockdown on confirmed cases is important for OmniCorp in order to be able to plan for potential future restrictions. The following graph shows the relative number of daily confirmed cases to the maximum number of confirmed cases for the United Kingdom, United States and Brazil. We will use the tidycovid19 [dataset](https://moodle.warwick.ac.uk/mod/resource/view.php?id=1023429), downloaded from the tidycovid19 R package on 24th September 2020. Descriptions of the different variables found in the data relating to the current epidemic and further details of the package can be found at this [website](https://joachim-gassen.github.io/tidycovid19/) (Gassen 2020).
 
@@ -65,16 +66,16 @@ BrazilCaseData <- CaseData %>%
   filter(country == "Brazil")
 BrazilCaseData$daily_confirmed <- scale(BrazilCaseData$daily_confirmed, center = FALSE)
 
+UKUSBrazilData <- rbind(UKCaseData,USCaseData,BrazilCaseData)
 
-plot_confirmed_date <- {UKCaseData %>% ggplot(aes(x = date, y = daily_confirmed, color='Country'))} +
-  geom_point(color = "blue") +
-  geom_point(data = USCaseData, color = "red") +
-  geom_point(data = BrazilCaseData, color = "green") +
+
+plot_confirmed_date <- {UKCaseData %>% ggplot(aes(x = date, y = daily_confirmed, color=country))} +
+  geom_point() +
   xlab("Date") +
   ylab("Daily Cases (% of maximum value in period)") +
   ggtitle("Daily confirmed cases is different across time for UK, US and Brazil",
           subtitle="Each point represents a single day.") +
-  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + 
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") +
   scale_color_manual(labels = c("United Kingdom", "United States", "Brazil"), 
                      values = c("red", "green", "blue")) +
   guides(color=guide_legend("Countries"))

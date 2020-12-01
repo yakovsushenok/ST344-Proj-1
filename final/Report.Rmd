@@ -404,8 +404,7 @@ USUKMexTakeoutResData <- rbind(USTakeoutResData, UKTakeoutResData, MexicoTakeout
 USUKMexTakeoutResPlot <- ggplot(data = USUKMexTakeoutResData, aes(x = gcmr_residential, 
                                                                   y = Take.Out.Interest, 
                                                                   group = country, 
-                                                                  col = country, 
-                                                                  fill = country)) + 
+                                                                  col = country)) + 
   geom_point() + 
   geom_smooth(size = 1) + 
   ylim(0,100) + 

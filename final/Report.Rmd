@@ -18,7 +18,7 @@ A summary of our findings is as follows:
 
  * The number of confirmed cases impacts the severity of lockdown and government interventions imposed.
  * As lockdown measures are enforced and people stay at home more, people travel into work less. This then effects the number of visits to physical stores. 
- * ...
+ * Lockdown decreased significantly physical retail and recreational activity, leading to ecommerce boom.
 
 # Analysis
 ## Confirmed cases
@@ -188,26 +188,19 @@ We look closer at the outliers in the trends for North & South America and ident
 
 Next, we will investigate consumer habits and how they changed throughout the pandemic. To have a broader view of the impact of lockdown on the retail and hospitality sectors, we need to examine the more fundamental parts of consumer's habits. In 1943, Psychologist Abraham Maslow introduced the [Maslow Hierarchy of Needs](https://www.simplypsychology.org/maslow.html). This model suggests that people need to fulfill basic needs before they can move on to more advanced ones such as psychological needs or self-fulfillment needs. Hence, we first start by investigating people's visits to grocery shops and pharmacies. Although this sector isn't directly connected to retail and hospitality, the principles are the same - they sell goods to consumers directly. To understand the mobility trend of people going outside and buying non-essential, retail products, we need to first understand their mobility trend of going to a grocery shop or pharmacy.
 
-Below is a graph depicting the average percentage change in the frequency of people's visits to grocery stores and pharmacies, relative to a baseline period from Jan 3 to Feb 6, 2020 of the three regions OmniCorp is operating in.
-
+Below is a graph depicting the average percentage change in the frequency of people's visits to grocery stores and pharmacies, relative to a baseline period from Jan 3 to Feb 6, 2020 of the three regions OmniCorp is operating in. In the majority of countries throughout the regions we are looking at, lockdown restrictions were imposed during [the period starting March-April and second lockdowns during October-November](https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns#Table_of_pandemic_lockdowns). Hence, the first and second vertical lines are the median dates of all dates of enforement. Note that North and South America did not have second lockdowns.
 
 ```{r glob_mobData }
 glob_mob1=read.csv("https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv")
 glob_mob=glob_mob1
-
 glob_mob=magrittr::extract(glob_mob,!names(glob_mob) %in% c("census_fips_code","sub_region_1","sub_region_2","metro_area","iso_3166_2_code"))
-
 glob_mob$date = as.Date(parse_date_time(glob_mob$date,orders=c("y","ym","ymd")))
-
 glob_mob<- {glob_mob %>% 
     filter(date > as.Date("2020-02-06"))}
-
 glob_mob= glob_mob%>%
   mutate(country_region_code=ifelse(country_region %in% NA_list,"North America",ifelse(country_region %in% SA_list,"South America",ifelse(country_region %in% europe_list,"Europe","NON"))))
-
 colnames(glob_mob)[colnames(glob_mob) == "country_region_code"] <- "region"
 colnames(glob_mob)[colnames(glob_mob) == "country_region"] <- "country"
-
 glob_mob=glob_mob[!(glob_mob$region=="NON"),]
 ```
 
@@ -219,7 +212,6 @@ groceryData = {glob_mob %>%
     summarise(mean_grocery_pharmacy = mean_(grocery_and_pharmacy_percent_change_from_baseline),
               mean_retail=mean_(retail_and_recreation_percent_change_from_baseline),
               region=region)}
-
 groceryData=unique(groceryData)
 ```
 
@@ -232,18 +224,18 @@ plot1 <- {glob_mob %>% ggplot(aes(x=date,
   xlab("Date") +
   ylab("Visits to groceries and pharmacies (% change from baseline)") +
   geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2) +
-  annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of lockdown") +
+  annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start Of Lockdown") +
   geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2) +
-  annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown") +
-  guides(color=guide_legend("Region"))
-
+  annotate("text",x=as.Date("2020-10-09"), y=45, label = "Start Of Second Lockdown") +
+  guides(color=guide_legend("Region")) +ggtitle("Substantial decrease in visits to grocery shops and pharmacies after first lockdown",
+           subtitle = "Drawn from Google Community Mobility Reports")
 print(plot1)
 ```
 
-In the majority of countries throughout the regions we are looking at, lockdown restrictions were imposed during [the period starting March-April](https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns#Table_of_pandemic_lockdowns). 
+ 
 As was expected, after the enforcement of lockdown measures, visits to grocery shops and pharmacies have decreased significantly, dropping as much as 35% in North America. For Europe and South America we see a fast recovery, whilst North America had a much slow recovery, relatively.
 
-From mid October to mid November, [countries in Europe started introducing second wave of lockdowns.](https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns#Table_of_pandemic_lockdowns). This lead to a decrease in the number of confirmed cases in Europe. In South America however, we see a gradual decrease since mid July. There have been no lockdowns in these countries since the first initial lockdowns. After nearly 8 months of consumer activity having a negative change relative to the baseline, North America recovers in October, and sees a constant increase. To summarize, we can conclude that people during the pandemic have reduced their visits to grocery and pharmacy shops.
+This lead to a decrease in the number of confirmed cases in Europe. In South America however, we see a gradual decrease since mid July. There have been no lockdowns in these countries since the first initial lockdowns. After nearly 8 months of consumer activity having a negative change relative to the baseline, North America recovers in October, and sees a constant increase. To summarize, we can conclude that people during the pandemic have reduced their visits to grocery and pharmacy shops.
 
 We now go on to explore retail and recreation activity during the pandemic. Below you will see the average percentage change in the frequency of people's visits to retail and recreation, relative to a baseline period from Jan 3 to Feb 6, 2020, starting from the 15th of February.
 
@@ -255,11 +247,11 @@ plot2 <- {glob_mob %>% ggplot(aes(x=date,
   xlab("Date") +
   ylab("Retail and recreation activity") +
   geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2) +
-  annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of Lockdown") +
+  annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start Of Lockdown") +
   geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2) +
-  annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown") +
-  guides(color=guide_legend("Region"))
-
+  annotate("text",x=as.Date("2020-10-09"), y=45, label = "Start Of Second Lockdown") +
+  guides(color=guide_legend("Region"))+ggtitle("Substantial decrease in retail and recreation activities after first lockdown followed by a slow recovery",
+           subtitle = "Drawn from Google Community Mobility Reports")
 print(plot2)
 ```
 
@@ -269,7 +261,7 @@ Although Europe and South America have recovered significantly faster than North
 
 Because of the sharp decrease in people visiting retail shops, [ecommerce has accelerated as a consequence.](https://www.wto.org/english/tratop_e/covid19_e/ecommerce_report_e.pdf). To further emphasize, Thanksgiving Day spending rose by nearly 22% year over year to $5.1 billion, hitting a new record, [according to Adobe Analytics data](https://www.nbcnewyork.com/news/business/money-report/thanksgiving-day-online-sales-hit-record-5-1-billion-up-21-5-from-last-year-adobe-says/2748620/).
 
-Although we cannot say that the pandemic has changed the way people purchase non-essential items permanently, a survey conducted in October in North America and Canada has showed that [58% of people who conducted the survery are unlikely to shop online](https://www.intouchinsight.com/hubfs/Survey%20Reports/Changes%20in%20Consumer%20Habits%20Oct%202020/Consumer%20Habits%20Survey%20Report_Oct2020%20for%20Web.pdf) (page 11). As shown in [this article](https://www.digitalcommerce360.com/article/e-commerce-sales-retail-sales-ten-year-review/), online retail purchases in the US have been growing steadily throughout the past years. We recommend OmniCorp investing in research and development in digital marketing, as consumers in the coming years will start moving more onto online spending.
+Although we cannot say that the pandemic has changed the way people purchase non-essential items permanently, a survey conducted in October in North America and Canada has showed that [42% of the people are very likely to shop online, compared to the 29% in May](https://www.intouchinsight.com/hubfs/Survey%20Reports/Changes%20in%20Consumer%20Habits%20Oct%202020/Consumer%20Habits%20Survey%20Report_Oct2020%20for%20Web.pdf) (page 11). As shown in [this article](https://www.digitalcommerce360.com/article/e-commerce-sales-retail-sales-ten-year-review/), online retail purchases in the US have been growing steadily throughout the past years. We recommend OmniCorp investing in research and development in digital marketing, as consumers in the coming years will start moving more onto online spending.
 
 ## Activity in residential places and interest in 'Take out'
 
@@ -453,3 +445,18 @@ Gassen, 2020, *Download, Tidy and Visualize Covid-19 Related Data*. [online] Ava
 Google, 2020. *COVID-19 Community Mobility Report*. [online] Available at: <https://www.google.com/covid19/mobility/>
 
 Google Trends, 2020 *Google Trends*. [online] Available at: <https://trends.google.com/trends/>
+
+Simplypsycholgoy, 2020. *Maslow's Hierarchy of Needs*. [online] Available at: <https://www.simplypsychology.org/maslow.html>
+
+Wikipedia, 2020. *COVID-19 pandemic lockdowns - Table of pandemic lockdowns*. [online] Available at : <https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns#Table_of_pandemic_lockdowns>
+
+World trade organization, 2020. *E-COMMERCE, TRADE AND THE COVID-19 PANDEMIC*. [online] Available at: <https://www.wto.org/english/tratop_e/covid19_e/ecommerce_report_e.pdf>
+
+NBC New York, 2020. *Thanksgiving Day Online Sales Hit Record $5.1 Billion, Up 21.5% From Last Year, Adobe Says*. [online] Available at: <https://www.nbcnewyork.com/news/business/money-report/thanksgiving-day-online-sales-hit-record-5-1-billion-up-21-5-from-last-year-adobe-says/2748620/>
+
+Intouch Insight, 2020. *Changes in Consumer Habits:
+A Six Month Comparison on the
+Evolution of Retail*. [online] Available at: <https://www.intouchinsight.com/hubfs/Survey%20Reports/Changes%20in%20Consumer%20Habits%20Oct%202020/Consumer%20Habits%20Survey%20Report_Oct2020%20for%20Web.pdf>
+
+Digital Commerce 360, 2020. *A decade in review: Ecommerce sales vs. retail sales 2007‑2019*. [online] Available at: <https://www.digitalcommerce360.com/article/e-commerce-sales-retail-sales-ten-year-review/>
+

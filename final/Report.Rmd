@@ -88,9 +88,9 @@ The number of confirmed cases has many effects on OmniCorp, both directly and in
 
 ## Activity in residential places and workplaces
 
-We will now look at how the frequency of people visiting residential and workplaces has changed during the pandemic for countries in Europe and North, Central and South America. In particular, we study the `gcmr_residential` and `gcmr_workplaces` variables from a community mobility report (Google, 2020). The variables are expressed as a percentage*100 change relative to the baseline period from Jan 3 to Feb 6, 2020. However, we take the data from Feb 7, as we want to look at the average percentage change in the frequency of people's visits to these places, without including the baseline in this mean. We find the mean of these variables and name them `mean_gcmr_residential` and `mean_gcmr_workplaces` respectively.
+We will now look at how the frequency of people visiting residential and workplaces has changed during the pandemic for countries in Europe and North, Central and South America. In particular, we use the same tidycovid 19 dataset as above, and study the `gcmr_residential` and `gcmr_workplaces` variables that have been taken from a community mobility report (Google, 2020). The variables are expressed as a percentage*100 change relative to the baseline period from Jan 3 to Feb 6, 2020. However, we take the data from Feb 7, as we want to look at the average percentage change in the frequency of people's visits to these places, without including the baseline in this mean. We find the mean of these variables and name them `mean_gcmr_residential` and `mean_gcmr_workplaces` respectively.
 
-We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America. Note that we are including the Central America Countries with North America. We fit a linear model as well as the best line of fit and see that a linear relationship between the variables fits fairly well.
+We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America. Note that we are including the Central America countries with North America. We fit a linear model between these variables and see that a linear relationship fits fairly well.
 
 ```{r EURUSAdata}
 EURUSA <- {CovidData %>% 
@@ -149,13 +149,12 @@ EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
   increases in Europe and America",
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
-  geom_smooth(method = loess, linetype = "dashed") +
   geom_abline(intercept = signif(lm.homework$coef[[1]],5),
               slope = signif(lm.homework$coef[[2]],5), color="blue", size=1)
 print(EURUSA_home_work)
 
 ```
-We now separate the plot into the different regions to see if the relationships of the variables differ between the regions. We also fit a linear model between `mean_gcmr_workplaces` and `mean_gcmr_residential` for all countries in Europe and America and plot this linear relationship on the graph, as well as the individual linear trends for each region.
+We now separate the plot into the different regions to see if the relationships of the variables differ between the regions. We fit a linear model between `mean_gcmr_workplaces` and `mean_gcmr_residential` for all countries in Europe and America, and plot this linear relationship on the graph, as well as the individual linear trends for each region.
 
 ```{r workVhomereg}
 EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
@@ -168,7 +167,6 @@ EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
   geom_point(data = filter(EURUSA1, country == "Paraguay" | country == "Nicaragua"), pch=21, fill=NA, size = 4, colour = "red", stroke=1) +
-  geom_smooth(method = loess, linetype = "dashed") +
   stat_smooth(method = "lm") +
   geom_abline(intercept = signif(lm.homework$coef[[1]],5),
               slope = signif(lm.homework$coef[[2]],5), color="black", size=1) +
@@ -427,7 +425,7 @@ However, it is important to note that the Google Trends data does not include th
 
 # Conclusion
 
-It is clear that the lockdown and government interventions in response to the COVID-19 outbreak have had effects on the retail and hospitality sectors, as well as society as a whole. Consumer habits and attitudes have been changed in a small period of time. Lockdowns generally helped slow the rate of infection within populations and reduce the impact to communities. However it brought within drastic changes. As shown, people have turned to using the internet to attempt to replace the missing gap on goods and services created by restrictions. This indicates a shift towards ecommerce and online activities. It is hard to tell if this was an already on-going process in which the COVID-19 outbreak, and subsequent government interventions, helped accelerate. Either way, it is very important for OmniCorp to be aware of this change.
+It is clear that the lockdown and government interventions in response to the COVID-19 outbreak have had effects on the retail and hospitality sectors, as well as society as a whole. Consumer habits and attitudes have been changed in a small period of time. Lockdowns generally helped slow the rate of infection within populations and reduce the impact to communities. However, it brought with it drastic changes; people stayed at home more, and travelled into work less. This decreased the activity in physical stores and as shown in the food industry in particular, people have turned to using the internet to shop for goods and services. This indicates a shift towards e-commerce and online activities. It is hard to tell if this was an already on-going process in which the COVID-19 outbreak, and subsequent government interventions, helped accelerate. With more time and data, we could identify if people's expenditure in physical shops remained the same and individual's just spent more when they were able to visit, or whether business' income was heavily hit due to the decreasy in activity in stores. Either way, it was clear that there was a significant increase in the use of internet for purchasing goods and services when restrictions were in place. Therefore, it is very important for OmniCorp to be aware of this change and it is strongly recommended that we dedicate resources to developing and sustaining a strong online presence.
 
 # References
 

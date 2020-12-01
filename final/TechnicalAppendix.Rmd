@@ -20,7 +20,7 @@ In this report, we will be exploring the effects of lockdown and other governmen
 # Analysis
 ## Confirmed cases
 
-
+In the following code chunks, we will be extracting the daily confirmed cases of COVID-19.
 ```{r CovidData, echo=TRUE}
 CovidData <- read.csv("tidycovid19.csv")
 
@@ -382,10 +382,11 @@ Although we cannot say that the pandemic has changed the way people purchase non
 
 Using [Google Trends](https://trends.google.com/trends/) data (Google Trends, 2020) on the search volume for various terms, we can investigate the general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of consumers in these regions.
 
+Here we are interested in investigating how the increase in the activity in places of residence affect the interest in using online delivery services. We do this by using the variable interest in 'Take out' from Google Search Trends. We will have a few plots for countries in each region to gain some idea of how these variables interact with each other. The data from Google Trends will look over the time period of 9th February 2020 to 20th September 2020.
 ```{r EuropeAmericadailyconfirmed, echo=TRUE}
 EuropeAmericaDataPostFeb6 <- {CovidData %>% 
     filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) & (date > as.Date("2020-02-06")) )}
-# Add a column so we can see the daily confirmed cases of covid19
+
 EuropeAmericaDataPostFeb6 <- EuropeAmericaDataPostFeb6 %>% 
   mutate(daily_confirmed = firstdiff(confirmed))
 ```
@@ -408,20 +409,12 @@ USTakeoutResData <- USTakeoutSearch
 USTakeoutResData <- USResidentialData %>% filter(date %in% USTakeoutSearch$date) %>% select(date, gcmr_residential)
 
 USTakeoutResData <- USTakeoutResData %>% mutate(. = (USTakeoutSearch %>% filter(date %in% USTakeoutResData$date) %>% select(Take.out...United.States.)))
-
-#The USTakeoutResData has the gcmr residential and the takeout interest in the US for the timeframe 09/02/2020 to 20/09/2020.
-
-
 ```
 
 ```{r USTakeoutResPlot, echo=TRUE}
-USTakeoutResPlot <- ggplot(USTakeoutResData, aes(x = gcmr_residential, y = Take.out...United.States.)) + geom_point(size = 0.5) + geom_smooth(method = 'lm', formula = y~x)+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the US") + ylim(c(0,100))
-
-
+USTakeoutResPlot <- ggplot(USTakeoutResData, aes(x = gcmr_residential, y = Take.out...United.States.)) + geom_point(size = 0.5) + geom_smooth()+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the US") + ylim(c(0,100))
 
 print(USTakeoutResPlot)
-
-#summary(lm(data = USTakeoutResData, Take.out...United.States. ~ gcmr_residential))
 ```
 
 ```{r UK Data, echo=TRUE}
@@ -442,9 +435,6 @@ UKTakeoutResData <- UKTakeoutSearch
 UKTakeoutResData <- UKResidentialData %>% filter(date %in% UKTakeoutSearch$date) %>% select(date, gcmr_residential)
 
 UKTakeoutResData <- UKTakeoutResData %>% mutate(. = (UKTakeoutSearch %>% filter(date %in% UKTakeoutResData$date) %>% select(Take.out...United.Kingdom.)))
-
-#The UKTakeoutResData has the gcmr residential and the takeout interest in the US for the timeframe 09/02/2020 to 20/09/2020.
-
 ```
 
 ```{r UKTakeoutResPlot, echo=TRUE}
@@ -452,8 +442,6 @@ UKTakeoutResPlot <- ggplot(UKTakeoutResData, aes(x = gcmr_residential, y = Take.
 
 
 print(UKTakeoutResPlot)
-
-#summary(lm(data = UKTakeoutResData, Take.out...United.Kingdom. ~ gcmr_residential))
 ```
 
 
@@ -475,17 +463,16 @@ BrazilTakeoutResData <- BrazilTakeoutSearch
 BrazilTakeoutResData <- BrazilResidentialData %>% filter(date %in% BrazilTakeoutSearch$date) %>% select(date, gcmr_residential)
 
 BrazilTakeoutResData <- BrazilTakeoutResData %>% mutate(. = (BrazilTakeoutSearch %>% filter(date %in% BrazilTakeoutResData$date) %>% select(Take.out...Brazil.)))
-
 ```
 
 ```{r BrazilTakeoutResPlot, echo=TRUE}
-BrazilTakeoutResPlot <- ggplot(BrazilTakeoutResData, aes(x = gcmr_residential, y = Take.out...Brazil.)) + geom_point(size = 0.5) + geom_smooth(method = 'lm', formula = y~x)+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in Brazil") + ylim(c(0,100)) + geom_smooth()
+BrazilTakeoutResPlot <- ggplot(BrazilTakeoutResData, aes(x = gcmr_residential, y = Take.out...Brazil.)) + geom_point(size = 0.5) + geom_smooth()+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in Brazil") + ylim(c(0,100))
 
 
 print(BrazilTakeoutResPlot)
 ```
 
-
+After plotting the graphs for US, UK, and Brazil individually we can see some positive relationship between the interest in 'Take out' and the activity in places of residence. We will look into this further by combining these into one plot and see how they vary between the countries.
 
 ```{r TakeoutResPlot, echo=TRUE}
 colnames(USTakeoutResData)[1] = "Take.Out.Interest"
@@ -511,6 +498,8 @@ Despite the U.S. government having 0 lockdown measures in place we have seen an 
 
 To capture the loss of business in the hospitality sector, mainly restaurants, We recommend OmniCorp to expand into delivery of food from their current hospitality businesses. This will hopefully recover the business that is lost due to COVID-19 whilst keeping the spread of COVID-19 to a minimum as customers will be eating at home. This is further supported by the following graph, showing the interest of the search terms `restaurants` and `take-out`. We will plot a graph of the average interest for these terms throughout European, North, Central and South American countries. The y axis represents search interest relative to the highest point on the chart for the given region and time. A value of 100 is the peak popularity for the term. A value of 50 means that the term is half as popular.
 
+
+We are also interested in how the search term 'Take out' compares to 'Restaurants' globally between January 2020 to early November 2020. To observe the direction of consumer habits towards online services. 
 ```{r chunkX, echo=TRUE}
 RestaurantTrendData <- read.csv("gt_restaurants.csv")
 TakeOutTrendData <- read.csv("gt_take_out.csv")

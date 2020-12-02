@@ -5,7 +5,7 @@ urlcolor: blue
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(dplyr)
 library(readxl)
 library(lubridate)
@@ -15,28 +15,32 @@ library(ggpubr)
 ```
 # Introduction
 
-In this report, we will be exploring the effects of lockdown and other government interventions on OmniCorp during the ongoing COVID-19 virus outbreak. Since our operations are primarily in Europe, and North, Central and South America, with stakes mainly in the retail and hospitality sectors, this is where we will be placing our focus. We present our findings and recommendations in the following. 
+In this document, we give full details of the analysis from our report, where we explore the effects of lockdown and other government interventions on OmniCorp during the ongoing COVID-19 virus outbreak. Since our operations are primarily in Europe, and North, Central and South America, with stakes mainly in the retail and hospitality sectors, this is where we place our focus. Given more time, we would be able to look at countries in different regions such as Asia, and compare their effects of lockdown.
 
 A summary of our findings is as follows:
 
  * The number of confirmed cases impacts the severity of lockdown and government interventions imposed.
- * As lockdown measures are enforced and people stay at home more, people travel into work less. This then effects the number of visits to physical stores. 
- * Lockdown decreased significantly physical retail and recreational activity, leading to ecommerce boom.
+ * As lockdown measures are enforced and people stay at home more, people travel into work less. This then effects the number of visits to physical stores.
+ * Lockdown decreased significantly physical retail and recreational activity, leading to e-commerce boom.
 
 # Analysis
-## Confirmed cases
+## Lockdown and confirmed cases
 
-In the following code chunks, we will be extracting the daily confirmed cases of COVID-19. We will also be plotting the number of lockdown measures against the date, and having a look into the COVID-19 cases over time.
-```{r CovidData, echo=TRUE}
+We first want to look at the number of confirmed cases of the COVID-19 virus, since the high rates of infection is what drove countries to enforce lockdown measures. Restrictions were put in place in attempt to slow down the rate of infection and consequently the number of confirmed cases within populations. 
+However, these restrictions brought with them huge changes to society in a very short period of time. These changes have both direct and indirect consequences to OmniCorp.
+
+Across countries, the types of restrictions, effectiveness of lockdown and adherence and enforcement of rules has varied significantly. The effect of lockdown on confirmed cases is important for OmniCorp in order to be able to plan for potential future restrictions. 
+
+We use the tidycovid19 [dataset](https://moodle.warwick.ac.uk/mod/resource/view.php?id=1023429), downloaded from the tidycovid19 R package on 24th September 2020 to find data during the pandemic. Descriptions of the different variables found in the data relating to the current epidemic and further details of the package can be found at this [website](https://joachim-gassen.github.io/tidycovid19/) (Gassen 2020).
+
+In the following code chunks, we extract the daily confirmed cases of COVID-19. We look at a selection of countries for each region of Europe, North America and South America and plot the number of lockdown measures against the date, and have a look into the COVID-19 cases over time. The countries we select are random so we can get a feel of the data and the progression of lockdown and confirmed cases during the pandemic. Note we will be including North and Central America in the same region and refer to it as North America.
+
+To generate these plots we use the `lockdown` variable from the tidycovid19 dataset. This variable is the number of lockdown measures reported up to date by ACAPS, net of lifted restrictions. To calculate the number of daily confirmed cases of COVID-19 as a percentage of the total population, we use (daily_confirmed/population)*100. Similarly, the total number of confirmed COVID-19 infections as a percentage of the total population is calculated using the same method but switching out the daily_confirmed for confirmed.
+```{r CovidData}
 CovidData <- read.csv("tidycovid19.csv")
 
 CovidData <- CovidData %>%
   mutate(date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd"))))
-```
-```{r CaseData, echo=TRUE}
-CaseData <- {CovidData %>% 
-    filter((str_detect(region, "America") | str_detect(region, "Europe"))) %>%
-    select(country, date, confirmed) }
 
 firstdiff <- function(x) {
   shifted <- c(0,x[1:(length(x)-1)])
@@ -45,6 +49,169 @@ firstdiff <- function(x) {
   result[which_negative] = NA
   return(result)
 }
+```
+
+### North America (and Central America)
+
+```{r CaseData2}
+CaseData2 <- {CovidData %>% 
+    filter((str_detect(region, "America") | str_detect(region, "Europe")))}
+
+CaseData2 <- CaseData2 %>%
+  mutate(daily_confirmed = firstdiff(confirmed))
+
+AmericaData <- CaseData2 %>%
+  filter(str_detect(region, "America"))
+
+AmericaData <- AmericaData %>% mutate(daily_conf_percentagepop = 
+                                        (daily_confirmed/population)*100)
+
+AmericaData <- AmericaData %>% mutate(confirmed_percentagepop = 
+                                        (confirmed/population)*100)
+
+```
+
+```{r NorthUSData, fig.align="center"}
+NorthCentralAmericaData <- AmericaData %>% filter(country %in% 
+          c("United States", "Mexico", "Canada", "Guatemala", "Cuba", "Haiti"))
+
+TotalNorthCentralAmericaConfirmed_percen <- ggplot(NorthCentralAmericaData, 
+                                                   aes(x = date, 
+                                                       y = confirmed_percentagepop,
+                                                       color = country)) + 
+  geom_line(size = 0.5) + 
+  ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + 
+  xlab("Date")
+
+DailyNorthCentralAmericaConfirmed <- ggplot(NorthCentralAmericaData, 
+                                            aes(x = date, 
+                                                y = daily_conf_percentagepop, 
+                                                color = country)) + 
+  geom_line(size = 0.5) + 
+  ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + 
+  xlab("Date")
+
+
+NorthCentralAmericaLockdown <- ggplot(NorthCentralAmericaData, 
+                                      aes(x = date,
+                                          y = lockdown, 
+                                          color = country)) + 
+  geom_line(size = 2) + 
+  ylab("Number of lockdown measures") + 
+  xlab("Date")
+
+```
+
+```{r Lockdownplot1, fig.align="center", out.width="75%"}
+print(NorthCentralAmericaLockdown)
+```
+
+```{r NCA plot, echo=TRUE, message=FALSE, warning=FALSE, out.width= "75%"}
+ggarrange(DailyNorthCentralAmericaConfirmed, TotalNorthCentralAmericaConfirmed_percen, 
+          ncol=2, nrow=1, common.legend = TRUE, legend="bottom")
+```
+
+### South America
+```{r SouthUSData}
+SouthAmericaData <- AmericaData %>% filter(country %in% 
+          c("Brazil", "Colombia", "Argentina", "Peru", "Venezuela", "Chile"))
+
+TotalSouthAmericaConfirmed_percen <- ggplot(SouthAmericaData, 
+                                            aes(x = date, 
+                                                y = confirmed_percentagepop, 
+                                                color = country)) + 
+  geom_line(size = 0.5) + 
+  ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + 
+  xlab("Date")
+
+DailySouthAmericaConfirmed <- ggplot(SouthAmericaData, 
+                                     aes(x = date, 
+                                         y = daily_conf_percentagepop, 
+                                         color = country)) + 
+  geom_line(size = 0.5) + 
+  ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + 
+  xlab("Date")
+
+
+SouthAmericaLockdown <- ggplot(SouthAmericaData, 
+                               aes(x = date, 
+                                   y = lockdown, 
+                                   color = country)) + 
+  geom_line(size = 2) + 
+  ylab("Number of lockdown measures") + 
+  xlab("Date")
+
+```
+
+```{r Lockdownplot2, echo=TRUE, fig.align="center", message=FALSE, warning=FALSE, out.width="75%"}
+print(SouthAmericaLockdown)
+```
+
+```{r SA plot, echo=TRUE, message=FALSE, warning=FALSE, out.width= "75%"}
+ggarrange(DailySouthAmericaConfirmed, TotalSouthAmericaConfirmed_percen, ncol=2, nrow=1, 
+          common.legend = TRUE, legend="bottom")
+```
+
+### Europe
+
+```{r EURData}
+EuropeData <- CaseData2 %>%
+  filter(str_detect(region, "Europe"))
+
+EuropeData <- EuropeData %>% mutate(daily_conf_percentagepop = 
+                                      (daily_confirmed/population)*100)
+
+EuropeData <- EuropeData %>% mutate(confirmed_percentagepop = 
+                                      (confirmed/population)*100)
+
+EuropeData <- EuropeData %>% filter(country %in% 
+        c("Russia", "Turkey", "Germany", "France", "United Kingdom", "Italy"))
+
+TotalEuropeConfirmed_percen <- ggplot(EuropeData, 
+                                      aes(x = date, 
+                                          y = confirmed_percentagepop, 
+                                          color = country)) + 
+  geom_line(size = 0.5) + 
+  ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + 
+  xlab("Date")
+
+DailyEuropeConfirmed <- ggplot(EuropeData, 
+                               aes(x = date, 
+                                   y = daily_conf_percentagepop, 
+                                   color = country)) + 
+  geom_line(size = 0.5) + 
+  ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + 
+  xlab("Date")
+
+
+EuropeLockdown <- ggplot(EuropeData, aes(x = date, y = lockdown, color = country)) + 
+  geom_line(size = 2) + 
+  ylab("Number of lockdown measures") + 
+  xlab("Date")
+
+```
+
+```{r Lockdownplot3, fig.align= "center", out.width="75%"}
+print(EuropeLockdown)
+```
+
+```{r Europe plot, message=FALSE, out.width="75%"}
+ggarrange(DailyEuropeConfirmed, TotalEuropeConfirmed_percen, ncol=2, nrow=1, 
+          common.legend = TRUE, legend="bottom")
+```
+
+The plots above show the number of lockdown measures against the date it was implemented, the number of daily confirmed COVID-19 infections as a percentage of the total population against the date and the total number of confirmed COVID-19 infections as a percentage of the total population against the date. Despite the number of lockdown measures being a vague measure of how governments intervened, it allows us to see which governments were cautious about COVID-19 and whether they implemented any measures at all. 
+
+We see from these plots that at the start of the pandemic, the infection rate of the virus was relatively high and thus the number of confirmed cases was rising at an exponential rate. Thus lockdown measures were enforced to reduce the spread of the virus.
+
+We choose to look now at how the number of confirmed cases differs for one country from each region of Europe, North America and South America to identify any immediate significant differences in the trends between countries in different regions and compare them. We choose United Kingdom for Europe, United States for North America and Brazil for South America since these are highly populated and feel they will give us a good indication of the general trend for the regions. We acknowledge that every country in each region is affected by the pandemic in their own ways, and from looking at the plots above we see that countries in the region do not all follow the same trend of the selected countries, but due to time limitations we continue with this. 
+
+The following graph shows the number of daily confirmed cases for the United Kingdom, United States and Mexico. 
+
+```{r CaseData}
+CaseData <- {CovidData %>% 
+    filter((str_detect(region, "America") | str_detect(region, "Europe"))) %>%
+    select(country, date, confirmed) }
 
 CaseData <- CaseData %>%
   mutate(daily_confirmed = firstdiff(confirmed))
@@ -66,157 +233,70 @@ BrazilCaseData <- CaseData %>%
   filter(country == "Brazil")
 BrazilCaseData$daily_confirmed <- scale(BrazilCaseData$daily_confirmed, center = FALSE)
 
+UKUSBrazilData <- rbind(UKCaseData,USCaseData,BrazilCaseData)
 
-plot_confirmed_date <- {UKCaseData %>% ggplot(aes(x = date, y = daily_confirmed, color='Country'))} +
-  geom_point(color = "blue") +
-  geom_point(data = USCaseData, color = "red") +
-  geom_point(data = BrazilCaseData, color = "green") +
+
+plot_confirmed_date <- {UKUSBrazilData %>% ggplot(aes(x = date, y = daily_confirmed, color=country))} +
+  geom_point() +
   xlab("Date") +
   ylab("Daily Cases (% of maximum value in period)") +
   ggtitle("Daily confirmed cases is different across time for UK, US and Brazil",
           subtitle="Each point represents a single day.") +
-  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + 
-  scale_color_manual(labels = c("United Kingdom", "United States", "Brazil"), 
-                     values = c("red", "green", "blue")) +
-  guides(color=guide_legend("Countries"))
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") +
+  scale_color_manual(labels = c("Brazil","United Kingdom", "United States"), 
+                    values = c("#619CFF","#F8766D", "#00BA38")) +
+  guides(color=guide_legend("Country"))
 ```
 
-### North America and Central America
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-CaseData2 <- {CovidData %>% 
-    filter((str_detect(region, "America") | str_detect(region, "Europe")))}
-
-CaseData2 <- CaseData2 %>%
-  mutate(daily_confirmed = firstdiff(confirmed))
-
-AmericaData <- CaseData2 %>%
-  filter(str_detect(region, "America"))
-
-AmericaData <- AmericaData %>% mutate(daily_conf_percentagepop = (daily_confirmed/population)*100)
-
-AmericaData <- AmericaData %>% mutate(confirmed_percentagepop = (confirmed/population)*100)
-
-```
-
-```{r echo=TRUE, fig.align="center", message=FALSE, warning=FALSE}
-NorthCentralAmericaData <- AmericaData %>% filter(country %in% c("United States", "Mexico", "Canada", "Guatemala", "Cuba", "Haiti"))
-
-TotalNorthCentralAmericaConfirmed_percen <- ggplot(NorthCentralAmericaData, aes(x = date, y = confirmed_percentagepop, color = country)) + geom_line(size = 0.5)+ ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
-
-DailyNorthCentralAmericaConfirmed <- ggplot(NorthCentralAmericaData, aes(x = date, y = daily_conf_percentagepop, color = country)) + geom_line(size = 0.5)  + ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
-
-
-NorthCentralAmericaLockdown <- ggplot(NorthCentralAmericaData, aes(x = date, y = lockdown, color = country)) + geom_line(size = 2) + ylab("Number of lockdown measures") + xlab("Date")
-
-```
-
-
-```{r Lockdownplot1, echo=FALSE, fig.align="center", message=FALSE, warning=FALSE, out.width="75%"}
-print(NorthCentralAmericaLockdown)
-```
-
-```{r NCA plot, echo=TRUE, message=FALSE, warning=FALSE, out.width= "75%"}
-ggarrange(DailyNorthCentralAmericaConfirmed, TotalNorthCentralAmericaConfirmed_percen, ncol=2, nrow=1, common.legend = TRUE, legend="bottom")
-```
-
-### South America
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-SouthAmericaData <- AmericaData %>% filter(country %in% c("Brazil", "Colombia", "Argentina", "Peru", "Venezuela", "Chile"))
-
-TotalSouthAmericaConfirmed_percen <- ggplot(SouthAmericaData, aes(x = date, y = confirmed_percentagepop, color = country)) + geom_line(size = 0.5)+ ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
-
-DailySouthAmericaConfirmed <- ggplot(SouthAmericaData, aes(x = date, y = daily_conf_percentagepop, color = country)) + geom_line(size = 0.5) + ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
-
-
-SouthAmericaLockdown <- ggplot(SouthAmericaData, aes(x = date, y = lockdown, color = country)) + geom_line(size = 2) + ylab("Number of lockdown measures") + xlab("Date")
-
-```
-
-```{r Lockdownplot2, echo=TRUE, fig.align="center", message=FALSE, warning=FALSE, out.width="75%"}
-print(SouthAmericaLockdown)
-```
-
-```{r SA plot, echo=TRUE, message=FALSE, warning=FALSE, out.width= "75%"}
-ggarrange(DailySouthAmericaConfirmed, TotalSouthAmericaConfirmed_percen, ncol=2, nrow=1, common.legend = TRUE, legend="bottom")
-```
-
-### Europe
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-EuropeData <- CaseData2 %>%
-  filter(str_detect(region, "Europe"))
-
-EuropeData <- EuropeData %>% mutate(daily_conf_percentagepop = (daily_confirmed/population)*100)
-
-EuropeData <- EuropeData %>% mutate(confirmed_percentagepop = (confirmed/population)*100)
-
-EuropeData <- EuropeData %>% filter(country %in% c("Russia", "Turkey", "Germany", "France", "United Kingdom", "Italy"))
-
-TotalEuropeConfirmed_percen <- ggplot(EuropeData, aes(x = date, y = confirmed_percentagepop, color = country)) + geom_line(size = 0.5)+ ylab("Number of confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
-
-DailyEuropeConfirmed <- ggplot(EuropeData, aes(x = date, y = daily_conf_percentagepop, color = country)) + geom_line(size = 0.5) + ylab("Daily confirmed cases of\nCOVID-19 (As a % of the total population)") + xlab("Date")
-
-
-EuropeLockdown <- ggplot(EuropeData, aes(x = date, y = lockdown, color = country)) + geom_line(size = 2) + ylab("Number of lockdown measures") + xlab("Date")
-
-```
-
-```{r Lockdownplot3, echo=TRUE, fig.align= "center", message=FALSE, warning=FALSE, out.width="75%"}
-print(EuropeLockdown)
-```
-
-```{r Europe plot, echo=TRUE, message=FALSE, warning=FALSE, out.width="75%"}
-ggarrange(DailyEuropeConfirmed, TotalEuropeConfirmed_percen, ncol=2, nrow=1, common.legend = TRUE, legend="bottom")
-```
-
-The plots above show the number of lockdown measures against the date it was implemented. The number of daily confirmed COVID-19 infections as a percentage of the total population against the date. The total number of confirmed COVID-19 infections as a percentage of the total population against the date. Despite the number of lockdown measures being a vague measure of how governments intervened, it allows us to see which governments were cautious about COVID-19 and whether they implemented any measures at all. We have sampled six countries for the regions North and Central America, South America and Europe. To generate these plots I used the lockdown variable from the tidycovid19 dataset, this variable is the number of lockdown measures reported up to date by ACAPS, net of lifted restrictions. For the number of daily confirmed cases of COVID-19 as a percentage of the total population, it was calculated by (daily_confirmed/population)*100. Similarly, the total number of confirmed COVID-19 infections as a percentage of the total population was calculated using the same method but switching out the daily_confirmed for confirmed.
-
-The first immediate effect of lockdown is with the number of confirmed cases of the COVID-19 virus. At the start of the pandemic, the infection rate of the virus was relatively high and thus the number of confirmed cases was rising at an exponential rate. Governments around the world started imposing lockdown and restrictions in attempts to slow down the rate of infection and consequently the number of confirmed cases within populations. However, these restrictions brought with them huge changes to society in a very short period of time. These changes have both direct and indirect consequences to OmniCorp.
-
-The main reason for lockdown is to reduce the spread of the virus. However, the types of restrictions, effectiveness of lockdown and adherence and enforcement of rules has varied significantly between countries. The effect of lockdown on confirmed cases is important for OmniCorp in order to be able to plan for potential future restrictions. The following graph shows the number of daily confirmed cases for the United Kingdom, United States and Mexico. We will use the tidycovid19 [dataset](https://moodle.warwick.ac.uk/mod/resource/view.php?id=1023429), downloaded from the tidycovid19 R package on 24th September 2020. Descriptions of the different variables found in the data relating to the current epidemic and further details of the package can be found at this [website](https://joachim-gassen.github.io/tidycovid19/) (Gassen 2020).
-
-```{r echo=TRUE}
+```{r plotconf}
 print(plot_confirmed_date)
 ```
 
-
-As we can see from the graph above, the three countries' number of confirmed cases is very different throughout the period. There are many possible explanations for this; first case time, geographical composition of land, population density, and most importantly, the types of lockdown the governments imposed. Although the distribution of confirmed cases looks very different for each country, they all seem to have a "first wave" where the number of daily cases rises to a high point then begins to fall. This would potentially indicate that lockdown and government interventions have an inverse relationship with the number of confirmed cases, that is, as restrictions are imposed, the number of cases decreases. This would make sense as many restrictions are stopping the movement and contact of people, reducing the spread of the virus. Although this 
+As we can see from the graph above, the three countries' number of confirmed cases is very different throughout the period. There are many possible explanations for this; first case time, geographical composition of land, population density, and most importantly, the types of lockdown the governments imposed. Although the distribution of confirmed cases looks very different for each country, they all have a "first wave" where the number of daily cases rises to a high point then begins to fall. This would potentially indicate that lockdown and government interventions have an inverse relationship with the number of confirmed cases, that is, as restrictions are imposed, the number of cases decreases. This would make sense as many restrictions are stopping the movement and contact of people, reducing the spread of the virus. 
 
 The number of confirmed cases has many effects on OmniCorp, directly and indirectly. The direct effects concern the staff, supply chain and customer base. OmniCorp Staff, as well as supply chain staff, may be affected by illness and self-isolation, meaning they cannot work. This will impact the everyday running of operations. High levels of unemployment may also mean customers do not have as much disposable income to spend in OmniCorp businesses, potentially seeing to a reduction in revenues. An indirect change is the implementation of lockdown and government interventions which in turn, may change consumer habits and behaviors. A key aspect of lockdown is restricting the movement of people. We will investigate the changes in these movement habits and how they will effect OmniCorp.
 
 ## Activity in residential places and workplaces
 
-We will now look at how the frequency of people visiting residential and workplaces has changed during the pandemic for countries in Europe and North, Central and South America. In particular, we study the `gcmr_residential` and `gcmr_workplaces` variables from a community mobility report (Google, 2020). The variables are expressed as a percentage*100 change relative to the baseline period from Jan 3 to Feb 6, 2020. However, we take the data from Feb 7, as we want to look at the average percentage change in the frequency of people's visits to these places, without including the baseline in this mean. We find the mean of these variables and name them `mean_gcmr_residential` and `mean_gcmr_workplaces` respectively.
+#In the following we also collate every country in each region and look at the general trends 
 
-We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America. Note that we are including the Central America Countries with North America. We fit a linear model as well as the best line of fit and see that a linear relationship between the variables fits fairly well.
+We will now look at how the frequency of people visiting residential and workplaces has changed during the pandemic for countries in Europe, North America and South America. In particular, we study the `gcmr_residential` and `gcmr_workplaces` variables from a community mobility report (Google, 2020). The variables are expressed as a percentage*100 change relative to the baseline period from Jan 3 to Feb 6, 2020. However, we take the data from Feb 7, as we want to look at the average percentage change in the frequency of people's visits to these places, without including the baseline in this mean. We find the mean of these variables and name them `mean_gcmr_residential` and `mean_gcmr_workplaces` respectively.
 
-```{r EURUSAdata, echo=TRUE}
+We plot the average percentage change in the frequency of visits to residential places against workplaces for countries in Europe and America from this year (Feb 7 onwards). We look particularly at the trends for Europe, North America and South America. We fit a linear model as well as the best line of fit and see that a linear relationship between the variables fits fairly well.
+
+```{r EURUSAdata}
 EURUSA <- {CovidData %>% 
     filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) ) %>%
     select(country, date, gcmr_workplaces, gcmr_residential, region)}
 
 europe_list=c("Albania","Andorra","Armenia","Austria","Azerbaijan","Belarus","Belgium",
-              "Bosnia & Herzegovina","Bulgaria","Croatia","Cyprus","Czechia","Denmark","Estonia","Finland","France",
-              "Georgia","Germany","Greece","Hungary","Iceland","Ireland","Italy","Kazakhstan","Kosovo","Latvia","Liechtenstein",
-              "Lithuania","Luxembourg","Malta","Moldova","Monaco","Montenegro","Netherlands","Macedonia","Norway","Poland","Portugal","Romania","Russia",
-              "San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland","Turkey",
-              "Ukraine","United Kingdom","Faroe Islands","Gibraltar","Isle of Man","North Macedonia")
+              "Bosnia & Herzegovina","Bulgaria","Croatia","Cyprus","Czechia","Denmark",
+              "Estonia","Finland","France", "Georgia","Germany","Greece","Hungary",
+              "Iceland","Ireland","Italy","Kazakhstan","Kosovo","Latvia","Liechtenstein",
+              "Lithuania","Luxembourg","Malta","Moldova","Monaco","Montenegro",
+              "Netherlands","Macedonia","Norway","Poland","Portugal","Romania","Russia",
+              "San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland",
+              "Turkey","Ukraine","United Kingdom","Faroe Islands","Gibraltar",
+              "Isle of Man","North Macedonia")
 
-NA_list=c("United States","Mexico","Canada","Guatemala","Cuba","Haiti","Dominican Republic",
-          "Honduras","El Salvador","Nicaragua","Costa Rica","Panama","Puerto Rico",
-          "Jamaica","Trinidad and Tobago","Guadeloupe","Martinique","Bahamas","Belize","Barbarbados","St. Lucia",
-          "St. Vincent & Grenadines","U.S. Virgin Islands","Grenada","Antigua & Barbuda","Dominica",
-          "Bermuda","Cayman Islands","Greenland","St. Kitts & Nevis","Sint Maarten",
-          "Turks & Caicos Islands","Saint Martin","British Virgin Islands","Barbados","Trinidad & Tobago")
+NA_list=c("United States","Mexico","Canada","Guatemala","Cuba","Haiti",
+          "Dominican Republic","Honduras","El Salvador","Nicaragua","Costa Rica",
+          "Panama","Puerto Rico","Jamaica","Trinidad and Tobago","Guadeloupe",
+          "Martinique","Bahamas","Belize","Barbarbados","St. Lucia",
+          "St. Vincent & Grenadines","U.S. Virgin Islands","Grenada","Antigua & Barbuda",
+          "Dominica","Bermuda","Cayman Islands","Greenland","St. Kitts & Nevis",
+          "Sint Maarten","Turks & Caicos Islands","Saint Martin","British Virgin Islands",
+          "Barbados","Trinidad & Tobago")
 
 SA_list=c("Aruba","Brazil","Colombia","Argentina","Peru","Venezuela","Chile","Ecuador",
-          "Bolivia","Paraguay","Uruguay","Guyana","Suriname","French Guiana","Falkland Islands","CuraÃ§ao")
+          "Bolivia","Paraguay","Uruguay","Guyana","Suriname","French Guiana",
+          "Falkland Islands","CuraÃ§ao")
 
 EURUSA.postFeb6 <- {EURUSA %>%
     filter( (date > as.Date("2020-02-06")) ) %>%
-    mutate(region=ifelse(country %in% NA_list,"North America",ifelse(country %in% SA_list,
-                                                                     "South America",ifelse(country %in% europe_list,"Europe","NON")))) %>%
+    mutate(region=ifelse(country %in% NA_list,"North America",
+                         ifelse(country %in% SA_list,"South America",
+                         ifelse(country %in% europe_list,"Europe","NON")))) %>%
     na.omit}
 
 EURUSA.postFeb6 = EURUSA.postFeb6[!(EURUSA.postFeb6$region=="NON"),]
@@ -249,7 +329,7 @@ S.USA1 <- {S.USA %>%
     filter(country %in% c("Argentina","Brazil","Chile","Colombia","Peru","Venezuela"))}
 
 ```
-```{r workVhome, echo=TRUE, fig.align='left'}
+```{r workVhome, fig.align='left'}
 lm.homework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = EURUSA1)
 
 EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
@@ -266,9 +346,11 @@ EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
 print(EURUSA_home_work)
 
 ```
+The dashed line shows an R fitted line of best fit and the solid line shows the fitted linear model between the variables. We see that the linear model is a fairly good fit for the data as it follow the same trend as the dashed line. This gives us confidence that there might be a linear relationship between the variables, that as activity in the workplace decreases, activity in residential places increases.
+
 We now separate the plot into the different regions to see if the relationships of the variables differ between the regions. We also fit a linear model between `mean_gcmr_workplaces` and `mean_gcmr_residential` for all countries in Europe and America and plot this linear relationship on the graph, as well as the individual linear trends for each region.
 
-```{r workVhomereg, echo=TRUE}
+```{r workVhomereg}
 EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,
                                             color=region))} +
@@ -278,8 +360,6 @@ EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
   increases across Europe, North America and South America",
            subtitle = "Drawn from Google Community Mobility Reports") +
   geom_point() +
-  geom_point(data = filter(EURUSA1, country == "Paraguay" | country == "Nicaragua"), 
-             pch=21, fill=NA, size = 4, colour = "red", stroke=1) +
   geom_smooth(method = loess, linetype = "dashed") +
   stat_smooth(method = "lm") +
   geom_abline(intercept = signif(lm.homework$coef[[1]],5),
@@ -296,12 +376,20 @@ We can see from this plot that the general trend is as the time spent in workpla
 
 We also note that there was a greater overall average activity in residential places in South America than in Europe. However, this could be explained by the time period. We are looking at data from Feb 7 - Sept 20, and in this time period South America is predominantly in Autumn and Winter, in which people tend to stay at home more than in Spring and Summer, so there is potential for misleading data. Given more time and data, it would be interesting to explore the structure of the economies for each of the countries as this could give more indication to why the trends appear to be different for each continent.
 
-We look closer at the outliers in the trends for North & South America and identify that these are Nicaragua & Paraguay, respectively. A possible explanation for these countries could be due to their very low rates of infection and number of confirmed cases. This may have had an effect on the level and type of lockdown that was imposed in these countries. This could indicate to OmniCorp that these countries could transition back to normal operations quicker than other countries post lockdown.
+We look closer at the outliers in the trends for North & South America and identify that these are Nicaragua & Paraguay, respectively. A possible explanation for these countries could be due to their very low rates of infection and number of confirmed cases. This may have had an effect on the level and type of lockdown that was imposed in these countries. This could indicate to OmniCorp that these countries could transition back to normal operations quicker than other countries post lockdown. We just highlight these points on the graph since they are noticeable outliers from the general trends.
+
+
+```{r workVhomereg2}
+EURUSA_home_work_regs +
+  geom_point(data = filter(EURUSA1, country == "Paraguay" | country == "Nicaragua"), 
+             pch=21, fill=NA, size = 4, colour = "red", stroke=1)
+print(EURUSA_home_work_regs)
+```
 
 
 ## Activity in grocery and retail
 
-To see how the trend of staying home has affected the retail and hospitality industry, we will start investigating consumer habits and how they changed throughout the pandemic. 
+To see how the trend of staying home has affected the retail and hospitality industry, we investigate consumer habits and how they change throughout the pandemic. 
 
 To have a broader view of the impact of lockdowns on retail and hospitality, we need to examine the more fundamental parts of people's consumer habits. In 1943, Psychologist Abraham Maslow introduced the [Maslow Hierarchy of Needs](https://www.simplypsychology.org/maslow.html). This model suggests that people need to fulfill basic needs before they can
 move on to more advanced ones such as psychological needs or self-fulfillment needs. Hence, we first start by investigating people's visits to grocery shops and pharmacies. Although this sector isn't directly connected to retail and hospitality, the principles are the same - they sell goods to consumers directly. To understand the mobility trend of people going outside and buying non-essential, retail products, we need to first understand their mobility trend of going to a grocery shop or pharmacy.
@@ -309,12 +397,13 @@ move on to more advanced ones such as psychological needs or self-fulfillment ne
 Below is a graph depicting the average percentage change in the frequency of people's visits to grocery stores and pharmacies, relative to a baseline period from Jan 3 to Feb 6, 2020 of the three regions OmniCorp is operating in.
 
 
-```{r glob_mobData, echo=TRUE}
+```{r glob_mobData}
 glob_mob1=read.csv("https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv")
 glob_mob=glob_mob1
 
-glob_mob=magrittr::extract(glob_mob,!names(glob_mob) %in% c("census_fips_code",
-                                                            "sub_region_1","sub_region_2","metro_area","iso_3166_2_code"))
+glob_mob=magrittr::extract(glob_mob,!names(glob_mob) %in% 
+                             c("census_fips_code","sub_region_1","sub_region_2",
+                               "metro_area","iso_3166_2_code"))
 
 glob_mob$date = as.Date(parse_date_time(glob_mob$date,orders=c("y","ym","ymd")))
 
@@ -323,8 +412,9 @@ glob_mob<- {glob_mob %>%
 
 glob_mob= glob_mob%>%
   mutate(country_region_code=
-           ifelse(country_region %in% NA_list,"North America",ifelse(country_region %in% SA_list,
-                                                                     "South America",ifelse(country_region %in% europe_list,"Europe","NON"))))
+           ifelse(country_region %in% NA_list,"North America",
+                  ifelse(country_region %in% SA_list,"South America",
+                  ifelse(country_region %in% europe_list,"Europe","NON"))))
 
 colnames(glob_mob)[colnames(glob_mob) == "country_region_code"] <- "region"
 colnames(glob_mob)[colnames(glob_mob) == "country_region"] <- "country"
@@ -332,13 +422,15 @@ colnames(glob_mob)[colnames(glob_mob) == "country_region"] <- "country"
 glob_mob=glob_mob[!(glob_mob$region=="NON"),]
 ```
 
-```{r groceryData, echo=TRUE}
+```{r groceryData}
 mean_ <- function(...) mean(..., na.rm=T)
 max_ <- function(...) max(..., na.rm=T)
 groceryData = {glob_mob %>% 
     group_by(country) %>% 
-    summarise(mean_grocery_pharmacy = mean_(grocery_and_pharmacy_percent_change_from_baseline),
-              mean_retail=mean_(retail_and_recreation_percent_change_from_baseline),
+    summarise(mean_grocery_pharmacy = 
+                mean_(grocery_and_pharmacy_percent_change_from_baseline),
+              mean_retail=
+                mean_(retail_and_recreation_percent_change_from_baseline),
               region=region)}
 
 groceryData=unique(groceryData)
@@ -349,14 +441,17 @@ plot1 <- {glob_mob %>% ggplot(aes(x=date,
                                   y=grocery_and_pharmacy_percent_change_from_baseline,
                                   color=region))} +
   geom_smooth() +
-  scale_colour_discrete(labels = c('Europe',"North America",'South America')) +
+  scale_colour_discrete(labels = c('Europe','South America',"North America")) +
   xlab("Date") +
-  ylab("Visits to groceries and pharmacies") +
+  ylab("Visits to groceries and pharmacies (% change from baseline)") +
   geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2) +
-  annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of lockdown") +
+  annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start Of Lockdown") +
   geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2) +
-  annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown") +
-  guides(color=guide_legend("Region")) +ggtitle("Substantial decrease in visits to grocery shops and pharmacies after first lockdown",subtitle = "Drawn from Google Community Mobility Reports")
+  annotate("text",x=as.Date("2020-10-09"), y=45, label = "Start Of Second Lockdown") +
+  guides(color=guide_legend("Region")) +
+  ggtitle("Substantial decrease in visits to grocery shops and pharmacies 
+          after first lockdown",
+           subtitle = "Drawn from Google Community Mobility Reports")
 print(plot1)
 ```
 
@@ -370,11 +465,24 @@ To summarize, we can conclude that people during the pandemic have preferred not
 
 We now go on to explore retail and recreation activity during the pandemic. Below you will see the average percentage change in the frequency of people's visits to retail and recreation, relative to a baseline period from Jan 3 to Feb 6, 2020, starting from the 15th of February.
 
-```{r plot2, echo=TRUE}
+```{r plot2}
 plot2 <- {glob_mob %>% ggplot(aes(x=date,     
-                                            y=retail_and_recreation_percent_change_from_baseline,color=region))}+geom_smooth()+scale_colour_discrete(labels = c('Europe',"North America",'South America'))+xlab("Date")+ylab("Retail and recreation activity")+geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2)+annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of Lockdown")+geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2)+annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown")
-
+                                  y=retail_and_recreation_percent_change_from_baseline,
+                                  color=region))} +
+  geom_smooth() +
+  scale_colour_discrete(labels = c('Europe','South America',"North America")) +
+  xlab("Date") +
+  ylab("Retail and recreation activity") +
+  geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2) +
+  annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start Of Lockdown") +
+  geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2) +
+  annotate("text",x=as.Date("2020-10-09"), y=45, label = "Start Of Second Lockdown") +
+  guides(color=guide_legend("Region"))+
+  ggtitle("Substantial decrease in retail and recreation activities after
+          first lockdown followed by a slow recovery",
+           subtitle = "Drawn from Google Community Mobility Reports")
 print(plot2)
+
 ```
 
 The decrease in activity to retail and recreation is much worse compared to the decrease to grocery shops and pharmacies. Europe and North America had decreased their activity as much as 65-70% in April, although there is a viable explanation to such a drop. In the majority of countries the lockdown restrictions forced non-essential stores to close and recreational activities such as Sports centers and entertainment centers were also forced to close.
@@ -390,61 +498,100 @@ Although we cannot say that the pandemic has changed the way people purchase non
 Using [Google Trends](https://trends.google.com/trends/) data (Google Trends, 2020) on the search volume for various terms, we can investigate the general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of consumers in these regions.
 
 Here we are interested in investigating how the increase in the activity in places of residence affect the interest in using online delivery services. We do this by using the variable interest in 'Take out' from Google Search Trends. We will have a few plots for countries in each region to gain some idea of how these variables interact with each other. The data from Google Trends will look over the time period of 9th February 2020 to 20th September 2020.
-```{r EuropeAmericadailyconfirmed, echo=TRUE}
+```{r EuropeAmericadailyconfirmed}
 EuropeAmericaDataPostFeb6 <- {CovidData %>% 
-    filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) & (date > as.Date("2020-02-06")) )}
+    filter( ( str_detect(region, "America") | str_detect(region, "Europe") ) & 
+              (date > as.Date("2020-02-06")) )}
 
 EuropeAmericaDataPostFeb6 <- EuropeAmericaDataPostFeb6 %>% 
   mutate(daily_confirmed = firstdiff(confirmed))
 ```
 
-```{r US Data, echo=TRUE}
-USResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% c("United States"))
+```{r US Data}
+USResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% 
+                                                            c("United States"))
 
-USResPlot <- ggplot(USResidentialData, aes(x = date, y = gcmr_residential)) + geom_smooth(size = 0.5) + xlab("Date") + ylab("Activity in places of residence") + ggtitle("Activity in places of residence against the date in the US")
+USResPlot <- ggplot(USResidentialData, aes(x = date, y = gcmr_residential)) + 
+  geom_smooth(size = 0.5) + 
+  xlab("Date") + 
+  ylab("Activity in places of residence") + 
+  ggtitle("Activity in places of residence against the date in the US")
 print(USResPlot)
 
-#Data obtained from google trends, searched terms "take-out (cuisine)" for the US in the past 12 months
+#Data obtained from google trends, searched terms "take-out (cuisine)" for the US 
+#in the past 12 months
 USTakeoutSearch <- read.csv("USTakeoutSearchGtrends.csv")
-USTakeoutSearch <- USTakeoutSearch %>% mutate(date = as.Date(parse_date_time(USTakeoutSearch$Week,c("d/m/y"))))
+USTakeoutSearch <- USTakeoutSearch %>% 
+  mutate(date = as.Date(parse_date_time(USTakeoutSearch$Week,c("d/m/y"))))
 
-USTakeoutPlot <- ggplot(USTakeoutSearch, aes(x = date, y = Take.out...United.States.)) + geom_smooth(size = 0.5) + xlab("Date") + ylab("Interest in 'Take-out' searches") + ggtitle("Interest in 'Take-out' against the date in the US")
+USTakeoutPlot <- ggplot(USTakeoutSearch, aes(x = date, y = Take.out...United.States.)) + 
+  geom_smooth(size = 0.5) + 
+  xlab("Date") + 
+  ylab("Interest in 'Take-out' searches") + 
+  ggtitle("Interest in 'Take-out' against the date in the US")
 
 print(USTakeoutPlot)
 
 USTakeoutResData <- USTakeoutSearch
-USTakeoutResData <- USResidentialData %>% filter(date %in% USTakeoutSearch$date) %>% select(date, gcmr_residential)
+USTakeoutResData <- USResidentialData %>% filter(date %in% USTakeoutSearch$date) %>% 
+  select(date, gcmr_residential)
 
-USTakeoutResData <- USTakeoutResData %>% mutate(. = (USTakeoutSearch %>% filter(date %in% USTakeoutResData$date) %>% select(Take.out...United.States.)))
+USTakeoutResData <- USTakeoutResData %>% 
+  mutate(. = (USTakeoutSearch %>% filter(date %in% USTakeoutResData$date) %>% 
+                select(Take.out...United.States.)))
 ```
 
-```{r USTakeoutResPlot, echo=TRUE}
-USTakeoutResPlot <- ggplot(USTakeoutResData, aes(x = gcmr_residential, y = Take.out...United.States.)) + geom_point(size = 0.5) + geom_smooth()+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the US") + ylim(c(0,100))
+```{r USTakeoutResPlot}
+USTakeoutResPlot <- ggplot(USTakeoutResData, 
+                           aes(x = gcmr_residential, 
+                               y = Take.out...United.States.)) + 
+  geom_point(size = 0.5) + 
+  geom_smooth() + 
+  ylab("Interest in 'Take out' searches over time ") + 
+  xlab("Activity in places of residence
+       (as a percentage*100 change relative to the baseline period)") + 
+  ggtitle("Interest in 'Take out' against the time spent in places of
+          residence in the US") + 
+  ylim(c(0,100))
 
 print(USTakeoutResPlot)
 ```
 
-```{r UK Data, echo=TRUE}
-UKResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% c("United Kingdom"))
+```{r UK Data}
+UKResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% 
+                                                            c("United Kingdom"))
 
-UKResPlot <- ggplot(UKResidentialData, aes(x = date, y = gcmr_residential)) + geom_smooth(size = 0.5) + xlab("Date") + ylab("Activity in places of residence") + ggtitle("Activity in places of residence against the date in the UK")
+UKResPlot <- ggplot(UKResidentialData, aes(x = date, y = gcmr_residential)) + 
+  geom_smooth(size = 0.5) + 
+  xlab("Date") + 
+  ylab("Activity in places of residence") + 
+  ggtitle("Activity in places of residence against the date in the UK")
 print(UKResPlot)
 
-#Data obtained from google trends, searched terms "take-out (cuisine)" for the US in the past 12 months
+#Data obtained from google trends, searched terms "take-out (cuisine)" for the UK
+#in the past 12 months
 UKTakeoutSearch <- read.csv("UKTakeoutSearchGtrends.csv")
-UKTakeoutSearch <- UKTakeoutSearch %>% mutate(date = as.Date(parse_date_time(UKTakeoutSearch$Week,c("d/m/y"))))
+UKTakeoutSearch <- UKTakeoutSearch %>% 
+  mutate(date = as.Date(parse_date_time(UKTakeoutSearch$Week,c("d/m/y"))))
 
-UKTakeoutPlot <- ggplot(UKTakeoutSearch, aes(x = date, y = Take.out...United.Kingdom.)) + geom_smooth(size = 0.5) + xlab("Date") + ylab("Interest in 'Take-out' searches") + ggtitle("Interest in 'Take-out' against the date in the UK")
+UKTakeoutPlot <- ggplot(UKTakeoutSearch, aes(x = date, y = Take.out...United.Kingdom.)) + 
+  geom_smooth(size = 0.5) + 
+  xlab("Date") + 
+  ylab("Interest in 'Take-out' searches") + 
+  ggtitle("Interest in 'Take-out' against the date in the UK")
 
 print(UKTakeoutPlot)
 
 UKTakeoutResData <- UKTakeoutSearch
-UKTakeoutResData <- UKResidentialData %>% filter(date %in% UKTakeoutSearch$date) %>% select(date, gcmr_residential)
+UKTakeoutResData <- UKResidentialData %>% filter(date %in% UKTakeoutSearch$date) %>% 
+  select(date, gcmr_residential)
 
-UKTakeoutResData <- UKTakeoutResData %>% mutate(. = (UKTakeoutSearch %>% filter(date %in% UKTakeoutResData$date) %>% select(Take.out...United.Kingdom.)))
+UKTakeoutResData <- UKTakeoutResData %>% 
+  mutate(. = (UKTakeoutSearch %>% filter(date %in% UKTakeoutResData$date) %>% 
+                select(Take.out...United.Kingdom.)))
 ```
 
-```{r UKTakeoutResPlot, echo=TRUE}
+```{r UKTakeoutResPlot}
 UKTakeoutResPlot <- ggplot(UKTakeoutResData, aes(x = gcmr_residential, y = Take.out...United.Kingdom.)) + geom_point(size = 0.5) + geom_smooth()+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the UK") + ylim(c(0,100))
 
 
@@ -452,28 +599,45 @@ print(UKTakeoutResPlot)
 ```
 
 
-```{r Brazil Data, echo=TRUE}
-BrazilResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% c("Brazil"))
+```{r Brazil Data}
+BrazilResidentialData <- EuropeAmericaDataPostFeb6 %>% filter(country %in% 
+                                                                c("Brazil"))
 
-BrazilResPlot <- ggplot(BrazilResidentialData, aes(x = date, y = gcmr_residential)) + geom_smooth(size = 0.5)
+BrazilResPlot <- ggplot(BrazilResidentialData, aes(x = date, y = gcmr_residential)) + 
+  geom_smooth(size = 0.5)
 print(BrazilResPlot)
 
-#Data obtained from google trends, searched terms "take-out (cuisine)" for Brazil in the past 12 months
+#Data obtained from google trends, searched terms "take-out (cuisine)" for Brazil 
+#in the past 12 months
 BrazilTakeoutSearch <- read.csv("BrazilTakeoutSearchGtrends.csv")
-BrazilTakeoutSearch <- BrazilTakeoutSearch %>% mutate(date = as.Date(parse_date_time(BrazilTakeoutSearch$Week,c("d/m/y"))))
+BrazilTakeoutSearch <- BrazilTakeoutSearch %>% 
+  mutate(date = as.Date(parse_date_time(BrazilTakeoutSearch$Week,c("d/m/y"))))
 
-BrazilTakeoutPlot <- ggplot(BrazilTakeoutSearch, aes(x = date, y = Take.out...Brazil.)) + geom_smooth(size = 0.5)
+BrazilTakeoutPlot <- ggplot(BrazilTakeoutSearch, aes(x = date, y = Take.out...Brazil.)) + 
+  geom_smooth(size = 0.5)
 
 print(BrazilTakeoutPlot)
 
 BrazilTakeoutResData <- BrazilTakeoutSearch
-BrazilTakeoutResData <- BrazilResidentialData %>% filter(date %in% BrazilTakeoutSearch$date) %>% select(date, gcmr_residential)
+BrazilTakeoutResData <- BrazilResidentialData %>% 
+  filter(date %in% BrazilTakeoutSearch$date) %>% select(date, gcmr_residential)
 
-BrazilTakeoutResData <- BrazilTakeoutResData %>% mutate(. = (BrazilTakeoutSearch %>% filter(date %in% BrazilTakeoutResData$date) %>% select(Take.out...Brazil.)))
+BrazilTakeoutResData <- BrazilTakeoutResData %>% 
+  mutate(. = (BrazilTakeoutSearch %>% filter(date %in% BrazilTakeoutResData$date) %>% 
+                select(Take.out...Brazil.)))
 ```
 
-```{r BrazilTakeoutResPlot, echo=TRUE}
-BrazilTakeoutResPlot <- ggplot(BrazilTakeoutResData, aes(x = gcmr_residential, y = Take.out...Brazil.)) + geom_point(size = 0.5) + geom_smooth()+ ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in Brazil") + ylim(c(0,100))
+```{r BrazilTakeoutResPlot}
+BrazilTakeoutResPlot <- ggplot(BrazilTakeoutResData, 
+                               aes(x = gcmr_residential, y = Take.out...Brazil.)) + 
+  geom_point(size = 0.5) + 
+  geom_smooth() + 
+  ylab("Interest in 'Take out' searches over time ") + 
+  xlab("Activity in places of residence
+       (as a percentage*100 change relative to the baseline period)") + 
+  ggtitle("Interest in 'Take out' against the time spent in places of
+          residence in Brazil") + 
+  ylim(c(0,100))
 
 
 print(BrazilTakeoutResPlot)
@@ -481,7 +645,7 @@ print(BrazilTakeoutResPlot)
 
 After plotting the graphs for US, UK, and Brazil individually we can see some positive relationship between the interest in 'Take out' and the activity in places of residence. We will look into this further by combining these into one plot and see how they vary between the countries.
 
-```{r TakeoutResPlot, echo=TRUE}
+```{r TakeoutResPlot}
 colnames(USTakeoutResData)[1] = "Take.Out.Interest"
 USTakeoutResData <- USTakeoutResData %>% mutate(country = "United States")
 
@@ -493,7 +657,23 @@ BrazilTakeoutResData <- BrazilTakeoutResData %>% mutate(country = "Brazil")
 
 USUKBrazTakeoutResData <- rbind(USTakeoutResData, UKTakeoutResData, BrazilTakeoutResData)
 
-USUKBrazTakeoutResPlot <- ggplot(data = USUKBrazTakeoutResData, aes(x = gcmr_residential, y = Take.Out.Interest, group = country, col = country, fill = country)) + geom_point() + geom_smooth(size = 1) + ylim(0,100) + ylab("Interest in 'Take out' searches over time ") + xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the US, UK and Brazil")
+
+USUKBrazTakeoutResPlot <- ggplot(data = USUKBrazTakeoutResData, 
+                                 aes(x = gcmr_residential, 
+                                     y = Take.Out.Interest,
+                                     group = country,
+                                     col = country)) + 
+  geom_point() + 
+  geom_smooth(size = 1) + 
+  ylim(0,100) + 
+  ylab("Interest in 'Take out' searches over time ") + 
+  xlab("Activity in places of residence
+       (as a percentage*100 change relative to the baseline period)") + 
+  ggtitle("Interest in 'Take out' against the time spent in places of
+          residence in the US, UK and Brazil") +
+  scale_color_manual(labels = c("Brazil","United Kingdom", "United States"), 
+                     values = c("#619CFF","#F8766D", "#00BA38")) +
+  guides(color=guide_legend("Country"))
 
 print(USUKBrazTakeoutResPlot)
 ```
@@ -507,7 +687,7 @@ To capture the loss of business in the hospitality sector, mainly restaurants, W
 
 
 We are also interested in how the search term 'Take out' compares to 'Restaurants' globally between January 2020 to early November 2020. To observe the direction of consumer habits towards online services. 
-```{r chunkX, echo=TRUE}
+```{r chunkX}
 RestaurantTrendData <- read.csv("gt_restaurants.csv")
 TakeOutTrendData <- read.csv("gt_take_out.csv")
 
@@ -534,7 +714,7 @@ The plot above shows that the two search terms' interests have an inverse relati
 
 # Conclusion
 
-It is clear that the lockdown and government interventions in response to the COVID-19 outbreak have had effects on the retail and hospitality sectors, as well as society as a whole. Consumer habits and attitudes have been change in a small period of time. Lockdowns generally helped slow the rate of infection within populations and reduce the impact to communities. However it brought within drastic changes. As shown, people have turned to using the internet to attempt to replace the missing gap on goods and services created by restrictions. This indicates a shift towards ecommerce and online activities. It is hard to tell if this was an already on-going process in which the COVID-19 outbreak, and subsequent government interventions, help accelerate. Either way, it is very important for OmniCorp to be aware of this change.
+It is clear that the lockdown and government interventions in response to the COVID-19 outbreak have had effects on the retail and hospitality sectors, as well as society as a whole. Consumer habits and attitudes have been changed in a small period of time. Lockdowns generally helped slow the rate of infection within populations and reduce the impact to communities. However, it brought with it drastic changes; people stayed at home more, and travelled into work less. This decreased the activity in physical stores and as shown in the food industry in particular, people have turned to using the internet to shop for goods and services. This indicates a shift towards e-commerce and online activities. It is hard to tell if this was an already on-going process in which the COVID-19 outbreak, and subsequent government interventions, helped accelerate. With more time and data, we could identify if people's expenditure in physical shops remained the same and individual's just spent more when they were able to visit, or whether business' income was heavily hit due to the decrease in activity in stores. Either way, it was clear that there was a significant increase in the use of internet for purchasing goods and services when restrictions were in place. Therefore, it is very important for OmniCorp to be aware of this change and it is strongly recommended that we dedicate resources to developing and sustaining a strong online presence.
 
 # References
 
@@ -543,3 +723,19 @@ Gassen, 2020, *Download, Tidy and Visualize Covid-19 Related Data*. [online] Ava
 Google, 2020. *COVID-19 Community Mobility Report*. [online] Available at: <https://www.google.com/covid19/mobility/>
 
 Google Trends, 2020 *Google Trends*. [online] Available at: <https://trends.google.com/trends/>
+
+Simplypsychology, 2020. *Maslow's Hierarchy of Needs*. [online] Available at: <https://www.simplypsychology.org/maslow.html>
+
+Wikipedia, 2020. *COVID-19 pandemic lockdowns - Table of pandemic lockdowns*. [online] Available at : <https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns#Table_of_pandemic_lockdowns>
+
+World trade organization, 2020. *E-COMMERCE, TRADE AND THE COVID-19 PANDEMIC*. [online] Available at: <https://www.wto.org/english/tratop_e/covid19_e/ecommerce_report_e.pdf>
+
+NBC New York, 2020. *Thanksgiving Day Online Sales Hit Record $5.1 Billion, Up 21.5% From Last Year, Adobe Says*. [online] Available at: <https://www.nbcnewyork.com/news/business/money-report/thanksgiving-day-online-sales-hit-record-5-1-billion-up-21-5-from-last-year-adobe-says/2748620/>
+
+Intouch Insight, 2020. *Changes in Consumer Habits:
+A Six Month Comparison on the
+Evolution of Retail*. [online] Available at: <https://www.intouchinsight.com/hubfs/Survey%20Reports/Changes%20in%20Consumer%20Habits%20Oct%202020/Consumer%20Habits%20Survey%20Report_Oct2020%20for%20Web.pdf>
+
+Digital Commerce 360, 2020. *A decade in review: Ecommerce sales vs. retail sales 2007‑2019*. [online] Available at: <https://www.digitalcommerce360.com/article/e-commerce-sales-retail-sales-ten-year-review/>
+
+

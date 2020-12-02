@@ -1,4 +1,6 @@
 ---
+title: "Team Report"
+author: "Team 7"
 output: pdf_document
 ---
 
@@ -17,10 +19,11 @@ In this report, we will be exploring the effects of lockdown and other governmen
 A summary of our findings is as follows:
 
  * The number of confirmed cases impacts the severity of lockdown and government interventions imposed.
- * As lockdown measures are enforced and people stay at home more, people travel into work less. This then effects the number of visits to physical stores.
+ * As lockdown measures are enforced and people stay at home more, traveling into work less. This then effects the number of visits to physical stores.
  * Lockdown decreased significantly physical retail and recreational activity, leading to e-commerce boom.
 
 # Analysis
+
 ## Confirmed cases
 
 The first immediate effect of lockdown is with the number of confirmed cases of the COVID-19 virus. At the start of the pandemic, the infection rate of the virus was relatively high and thus the number of confirmed cases was rising at an exponential rate. Governments around the world started imposing lockdown measures and restrictions in attempt to slow down the rate of infection and consequently the number of confirmed cases within populations. However, these restrictions brought with them huge changes to society in a very short period of time. These changes have both direct and indirect consequences to OmniCorp.

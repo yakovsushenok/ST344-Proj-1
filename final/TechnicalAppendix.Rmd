@@ -383,7 +383,6 @@ We look closer at the outliers in the trends for North & South America and ident
 EURUSA_home_work_regs +
   geom_point(data = filter(EURUSA1, country == "Paraguay" | country == "Nicaragua"), 
              pch=21, fill=NA, size = 4, colour = "red", stroke=1)
-print(EURUSA_home_work_regs)
 ```
 
 

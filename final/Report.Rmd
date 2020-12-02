@@ -394,6 +394,8 @@ USUKBrazTakeoutResPlot <- ggplot(data = USUKBrazTakeoutResData, aes(x = gcmr_res
   ylab("Interest in 'Take out' searches over time ") + 
   xlab("Activity in places of residence\n(as a percentage*100 change relative to the baseline period)") + 
   ggtitle("Interest in 'Take out' against the time spent in places of\nresidence in the US, UK and Brazil") +
+  scale_color_manual(labels = c("Brazil","United Kingdom", "United States"), 
+                     values = c("#619CFF","#F8766D", "#00BA38")) +
   guides(color=guide_legend("Country"))
 
 print(USUKBrazTakeoutResPlot)

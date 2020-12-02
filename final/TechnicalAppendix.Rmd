@@ -15,7 +15,13 @@ library(ggpubr)
 ```
 # Introduction
 
-In this report, we will be exploring the effects of lockdown and other government interventions on OmniCorp. OmniCorp is a large multi-national commercial company with stakes in the retail and hospitality sectors. Their operations are primarily in Europe, and North, Central and South America. We have been tasked with building an in house expertise on the ongoing COVID-19 virus outbreak. This report is our findings and recommendations to the company. 
+In this report, we will be exploring the effects of lockdown and other government interventions on OmniCorp during the ongoing COVID-19 virus outbreak. Since our operations are primarily in Europe, and North, Central and South America, with stakes mainly in the retail and hospitality sectors, this is where we will be placing our focus. We present our findings and recommendations in the following. 
+
+A summary of our findings is as follows:
+
+ * The number of confirmed cases impacts the severity of lockdown and government interventions imposed.
+ * As lockdown measures are enforced and people stay at home more, people travel into work less. This then effects the number of visits to physical stores. 
+ * Lockdown decreased significantly physical retail and recreational activity, leading to ecommerce boom.
 
 # Analysis
 ## Confirmed cases
@@ -280,7 +286,8 @@ EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
               slope = signif(lm.homework$coef[[2]],5), color="black", size=1) +
   labs(caption = paste("Linear model for all countries: ",
                        "Intercept =",signif(lm.homework$coef[[1]],5),
-                       " Slope =",signif(lm.homework$coef[[2]],5)))
+                       " Slope =",signif(lm.homework$coef[[2]],5))) +
+                       guides(color=guide_legend("Region"))
 print(EURUSA_home_work_regs)
 
 ```
@@ -348,8 +355,8 @@ plot1 <- {glob_mob %>% ggplot(aes(x=date,
   geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2) +
   annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of lockdown") +
   geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2) +
-  annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown")
-
+  annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown") +
+  guides(color=guide_legend("Region")) +ggtitle("Substantial decrease in visits to grocery shops and pharmacies after first lockdown",subtitle = "Drawn from Google Community Mobility Reports")
 print(plot1)
 ```
 
@@ -359,15 +366,15 @@ As was expected, after the enforcement of lockdown measures, visits to grocery s
 
 From mid October to mid November, [countries in Europe started introducing second wave of lockdowns.](https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns#Table_of_pandemic_lockdowns). This lead to a decrease in the number of confirmed cases in Europe. In South America however, we see a gradual decrease since mid July. There have been no lockdowns in these countries since the first initial lockdowns. After nearly 8 months of being in the sub 0 regions, North America recovers in October, and sees a constant increase.
 
-To summarize, we can conclude that people during the pandemic have clearly preferred not going to grocery and pharmacy shops.
+To summarize, we can conclude that people during the pandemic have preferred not going to grocery and pharmacy shops physically. Or perhaps one family member would do the shopping instead of the entire family, hence in this way, Activities for these certain places may decrease but the real situation still depends on more data and investigation.
 
 We now go on to explore retail and recreation activity during the pandemic. Below you will see the average percentage change in the frequency of people's visits to retail and recreation, relative to a baseline period from Jan 3 to Feb 6, 2020, starting from the 15th of February.
 
 ```{r plot2, echo=TRUE}
-plot1 <- {glob_mob %>% ggplot(aes(x=date,     
+plot2 <- {glob_mob %>% ggplot(aes(x=date,     
                                             y=retail_and_recreation_percent_change_from_baseline,color=region))}+geom_smooth()+scale_colour_discrete(labels = c('Europe',"North America",'South America'))+xlab("Date")+ylab("Retail and recreation activity")+geom_vline(xintercept=as.numeric(as.Date("2020-03-15")),linetype=2)+annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start of Lockdown")+geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2)+annotate("text",x=as.Date("2020-10-15"), y=45, label = "Start of second lockdown")
 
-print(plot1)
+print(plot2)
 ```
 
 The decrease in activity to retail and recreation is much worse compared to the decrease to grocery shops and pharmacies. Europe and North America had decreased their activity as much as 65-70% in April, although there is a viable explanation to such a drop. In the majority of countries the lockdown restrictions forced non-essential stores to close and recreational activities such as Sports centers and entertainment centers were also forced to close.

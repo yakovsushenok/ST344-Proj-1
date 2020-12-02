@@ -17,8 +17,8 @@ In this report, we will be exploring the effects of lockdown and other governmen
 A summary of our findings is as follows:
 
  * The number of confirmed cases impacts the severity of lockdown and government interventions imposed.
- * As lockdown measures are enforced and people stay at home more, people travel into work less. This then effects the number of visits to physical stores. 
- * Lockdown decreased significantly physical retail and recreational activity, leading to ecommerce boom.
+ * As lockdown measures are enforced and people stay at home more, people travel into work less. This then effects the number of visits to physical stores.
+ * Lockdown decreased significantly physical retail and recreational activity, leading to e-commerce boom.
 
 # Analysis
 ## Confirmed cases
@@ -77,7 +77,7 @@ plot_confirmed_date <- {UKUSBrazilData %>% ggplot(aes(x = date, y = daily_confir
           subtitle="Each point represents a single day.") +
   scale_x_date(date_breaks = "months", date_labels = "%b-%y") +
   scale_color_manual(labels = c("Brazil","United Kingdom", "United States"), 
-                    values = c("blue","red", "green")) +
+                    values = c("#619CFF","#F8766D", "#00BA38")) +
   guides(color=guide_legend("Country"))
 
 print(plot_confirmed_date)

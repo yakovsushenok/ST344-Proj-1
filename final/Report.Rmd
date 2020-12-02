@@ -33,7 +33,7 @@ CovidData <- read.csv("tidycovid19.csv")
 CovidData <- CovidData %>%
   mutate(date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd"))))
 ```
-```{r CaseData}
+```{r CaseData, out.width = "85%"}
 CaseData <- {CovidData %>% 
     filter((str_detect(region, "America") | str_detect(region, "Europe"))) %>%
     select(country, date, confirmed) }
@@ -82,6 +82,8 @@ plot_confirmed_date <- {UKUSBrazilData %>% ggplot(aes(x = date, y = daily_confir
 
 print(plot_confirmed_date)
 ```
+
+
 As we can see from the graph above, the three countries' number of confirmed cases is very different throughout the period. There are many possible explanations for this; first case time, geographical composition of land, population density, and most importantly, the types of lockdown the governments imposed. Although the distribution of confirmed cases looks very different for each country, they all have a "first wave" where the number of daily cases rises to a high point then begins to fall. This would potentially indicate that lockdown and government interventions have an inverse relationship with the number of confirmed cases, that is, as restrictions are imposed, the number of cases decreases. This would make sense as many restrictions are stopping the movement and contact of people, reducing the spread of the virus. 
 
 The number of confirmed cases has many effects on OmniCorp, both directly and indirectly. The direct effects concern the staff, supply chain and customer base. OmniCorp Staff, as well as supply chain staff, may be affected by illness and self-isolation, meaning they cannot work. This will impact the everyday running of operations. High levels of unemployment may also mean customers do not have as much disposable income to spend in OmniCorp businesses, potentially seeing to a reduction in revenues. An indirect effect is the implementation of lockdown and government interventions which in turn, may change consumer habits and behaviors. A key aspect of lockdown is restricting the movement of people. We will investigate the changes in these movement habits and how they will effect OmniCorp in more detail below.
@@ -138,7 +140,7 @@ S.USA1 <- {S.USA %>%
     filter(country %in% c("Argentina","Brazil","Chile","Colombia","Peru","Venezuela"))}
 
 ```
-```{r workVhome, fig.align='left'}
+```{r workVhome, fig.align='left', out.width = "75%"}
 lm.homework <- lm(mean_gcmr_workplaces ~ mean_gcmr_residential, data = EURUSA1)
 
 EURUSA_home_work <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
@@ -156,7 +158,7 @@ print(EURUSA_home_work)
 ```
 We now separate the plot into the different regions to see if the relationships of the variables differ between the regions. We fit a linear model between `mean_gcmr_workplaces` and `mean_gcmr_residential` for all countries in Europe and America, and plot this linear relationship on the graph, as well as the individual linear trends for each region.
 
-```{r workVhomereg}
+```{r workVhomereg, out.width = "85%"}
 EURUSA_home_work_regs <- {EURUSA1 %>% ggplot(aes(x = mean_gcmr_residential,
                                             y = mean_gcmr_workplaces,
                                             color=region))} +
@@ -215,7 +217,7 @@ groceryData = {glob_mob %>%
 groceryData=unique(groceryData)
 ```
 
-```{r plot1}
+```{r plot1, out.width = "75%"}
 plot1 <- {glob_mob %>% ggplot(aes(x=date,     
                                   y=grocery_and_pharmacy_percent_change_from_baseline,
                                   color=region))} +
@@ -227,7 +229,7 @@ plot1 <- {glob_mob %>% ggplot(aes(x=date,
   annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start Of Lockdown") +
   geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2) +
   annotate("text",x=as.Date("2020-10-09"), y=45, label = "Start Of Second Lockdown") +
-  guides(color=guide_legend("Region")) +ggtitle("Substantial decrease in visits to grocery shops and pharmacies after first lockdown",
+  guides(color=guide_legend("Region")) +ggtitle("Substantial decrease in visits to grocery shops and pharmacies\nafter first lockdown",
            subtitle = "Drawn from Google Community Mobility Reports")
 print(plot1)
 ```
@@ -239,7 +241,7 @@ This lead to a decrease in the number of confirmed cases in Europe. In South Ame
 
 We now go on to explore retail and recreation activity during the pandemic. Below you will see the average percentage change in the frequency of people's visits to retail and recreation, relative to a baseline period from Jan 3 to Feb 6, 2020, starting from the 15th of February.
 
-```{r plot2}
+```{r plot2, out.width = "75%"}
 plot2 <- {glob_mob %>% ggplot(aes(x=date,     
                                   y=retail_and_recreation_percent_change_from_baseline,color=region))} +
   geom_smooth() +
@@ -250,7 +252,7 @@ plot2 <- {glob_mob %>% ggplot(aes(x=date,
   annotate("text",x=as.Date("2020-03-20"), y=45, label = "Start Of Lockdown") +
   geom_vline(xintercept=as.numeric(as.Date("2020-10-20")),linetype=2) +
   annotate("text",x=as.Date("2020-10-09"), y=45, label = "Start Of Second Lockdown") +
-  guides(color=guide_legend("Region"))+ggtitle("Substantial decrease in retail and recreation activities after first lockdown followed by a slow recovery",
+  guides(color=guide_legend("Region"))+ggtitle("Substantial decrease in retail and recreation activities after\nfirst lockdown followed by a slow recovery",
            subtitle = "Drawn from Google Community Mobility Reports")
 print(plot2)
 ```
@@ -372,7 +374,7 @@ BrazilTakeoutResPlot <- ggplot(BrazilTakeoutResData, aes(x = gcmr_residential, y
 
 
 
-```{r TakeoutResPlot}
+```{r TakeoutResPlot, out.width = "85%"}
 colnames(USTakeoutResData)[1] = "Take.Out.Interest"
 USTakeoutResData <- USTakeoutResData %>% mutate(country = "United States")
 
@@ -409,7 +411,7 @@ Despite the U.S. government having 0 lockdown measures in place we have seen an 
 
 To capture the loss of business in the hospitality sector, mainly restaurants, We recommend OmniCorp to expand into delivery of food from their current hospitality businesses. This will hopefully recover the business that is lost due to COVID-19 whilst keeping the spread of COVID-19 to a minimum as customers will be eating at home. This is further supported by the following graph, showing the interest of the search terms `restaurants` and `take-out`. We will plot a graph of the average interest for these terms throughout European, North, Central and South American countries. The y axis represents search interest relative to the highest point on the chart for the given region and time. A value of 100 is the peak popularity for the term. A value of 50 means that the term is half as popular.
 
-```{r chunkX}
+```{r chunkX, out.width = "85%"}
 RestaurantTrendData <- read.csv("gt_restaurants.csv")
 TakeOutTrendData <- read.csv("gt_take_out.csv")
 

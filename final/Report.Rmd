@@ -28,7 +28,7 @@ A summary of our findings is as follows:
 
 The first immediate effect of lockdown is with the number of confirmed cases of the COVID-19 virus. At the start of the pandemic, the infection rate of the virus was relatively high and thus the number of confirmed cases was rising at an exponential rate. Governments around the world started imposing lockdown measures and restrictions in attempt to slow down the rate of infection and consequently the number of confirmed cases within populations. However, these restrictions brought with them huge changes to society in a very short period of time. These changes have both direct and indirect consequences to OmniCorp.
 
-The main reason for lockdown is to reduce the spread of the virus. However, the types of restrictions, effectiveness of lockdown and adherence and enforcement of rules has varied significantly between countries. The effect of lockdown on confirmed cases is important for OmniCorp in order to be able to plan for potential future restrictions. The following graph shows the relative number of daily confirmed cases to the maximum number of confirmed cases for the United Kingdom, United States and Brazil. We will use the tidycovid19 [dataset](https://moodle.warwick.ac.uk/mod/resource/view.php?id=1023429), downloaded from the tidycovid19 R package on 24th September 2020. Descriptions of the different variables found in the data relating to the current epidemic and further details of the package can be found at this [website](https://joachim-gassen.github.io/tidycovid19/) (Gassen 2020).
+The main reason for lockdown is to reduce the spread of the virus. However, the types of restrictions, effectiveness of lockdown and adherence and enforcement of rules has varied significantly between countries. The effect of lockdown on confirmed cases is important for OmniCorp in order to be able to plan for potential future restrictions. The following graph shows the relative number of daily confirmed cases to the maximum number of confirmed cases for the United Kingdom, United States and Brazil. We will use the tidycovid19 [dataset](https://moodle.warwick.ac.uk/mod/resource/view.php?id=1023429), downloaded from the tidycovid19 R package on 24th September 2020. Descriptions of the different variables found in the data relating to the current epidemic and further details of the package can be found at this [website](https://joachim-gassen.github.io/tidycovid19/) (Gassen, 2020).
 
 ```{r CovidData}
 CovidData <- read.csv("tidycovid19.csv")
@@ -270,7 +270,7 @@ Although we cannot say that the pandemic has changed the way people purchase non
 
 ## Activity in residential places and interest in 'Take out'
 
-Using [Google Trends](https://trends.google.com/trends/) data (Google Trends, 2020) on the search volume for various terms, we can investigate general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of consumers in these regions.
+Using [Google Trends](https://trends.google.com/trends/) data (Google Trends, 2020) on the search volume for various terms, we can investigate general interest over time. Google Trends is an unbiased sample of Google search data. It’s anonymised, categorized and aggregated. For the regions we are looking at - Europe, North, Central and South America - the [percentage of population](https://www.internetworldstats.com/)(Internet World Stats, 2020) that uses the internet is 88%, 95%, 61% and 72% respectively. This indicates that the search patterns shown by Google Trends may be an accurate representation of the behaviors and interests of consumers in these regions.
 
 ```{r EuropeAmericadailyconfirmed}
 EuropeAmericaDataPostFeb6 <- {CovidData %>% 
@@ -447,23 +447,22 @@ It is clear that the lockdown and government interventions in response to the CO
 
 # References
 
+Digital Commerce 360, 2020. *A decade in review: Ecommerce sales vs. retail sales 2007‑2019*. [online] Available at: <https://www.digitalcommerce360.com/article/e-commerce-sales-retail-sales-ten-year-review/>
+
+Internet World Stats, 2020. *Internet World Stats Usage and Population Statistics*. [online] Available at: <https://www.internetworldstats.com/>
+
+Intouch Insight, 2020. *Changes in Consumer Habits: A Six Month Comparison on the Evolution of Retail*. [online] Available at: <https://www.intouchinsight.com/hubfs/Survey%20Reports/Changes%20in%20Consumer%20Habits%20Oct%202020/Consumer%20Habits%20Survey%20Report_Oct2020%20for%20Web.pdf>
+
 Gassen, 2020, *Download, Tidy and Visualize Covid-19 Related Data*. [online] Available at: <https://joachim-gassen.github.io/tidycovid19/>
 
 Google, 2020. *COVID-19 Community Mobility Report*. [online] Available at: <https://www.google.com/covid19/mobility/>
 
 Google Trends, 2020 *Google Trends*. [online] Available at: <https://trends.google.com/trends/>
 
+NBC New York, 2020. *Thanksgiving Day Online Sales Hit Record $5.1 Billion, Up 21.5% From Last Year, Adobe Says*. [online] Available at: <https://www.nbcnewyork.com/news/business/money-report/thanksgiving-day-online-sales-hit-record-5-1-billion-up-21-5-from-last-year-adobe-says/2748620/>
+
 Simplypsychology, 2020. *Maslow's Hierarchy of Needs*. [online] Available at: <https://www.simplypsychology.org/maslow.html>
 
 Wikipedia, 2020. *COVID-19 pandemic lockdowns - Table of pandemic lockdowns*. [online] Available at : <https://en.wikipedia.org/wiki/COVID-19_pandemic_lockdowns#Table_of_pandemic_lockdowns>
 
 World trade organization, 2020. *E-COMMERCE, TRADE AND THE COVID-19 PANDEMIC*. [online] Available at: <https://www.wto.org/english/tratop_e/covid19_e/ecommerce_report_e.pdf>
-
-NBC New York, 2020. *Thanksgiving Day Online Sales Hit Record $5.1 Billion, Up 21.5% From Last Year, Adobe Says*. [online] Available at: <https://www.nbcnewyork.com/news/business/money-report/thanksgiving-day-online-sales-hit-record-5-1-billion-up-21-5-from-last-year-adobe-says/2748620/>
-
-Intouch Insight, 2020. *Changes in Consumer Habits:
-A Six Month Comparison on the
-Evolution of Retail*. [online] Available at: <https://www.intouchinsight.com/hubfs/Survey%20Reports/Changes%20in%20Consumer%20Habits%20Oct%202020/Consumer%20Habits%20Survey%20Report_Oct2020%20for%20Web.pdf>
-
-Digital Commerce 360, 2020. *A decade in review: Ecommerce sales vs. retail sales 2007‑2019*. [online] Available at: <https://www.digitalcommerce360.com/article/e-commerce-sales-retail-sales-ten-year-review/>
-
